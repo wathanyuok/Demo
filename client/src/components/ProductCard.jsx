@@ -21,7 +21,9 @@ const ProductCard = ({ product }) => {
           className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
         />
        
-        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 ${isHovered ? 'opacity-100' : ''}`} />
+            {/* <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 ${isHovered ? 'opacity-100' : ''}`} /> */}
+            <div className={`absolute inset-0 bg-gradient-to-t from-green-500/60 via-purple-500/40 to-transparent opacity-0 transition-opacity duration-300 ${isHovered ? 'opacity-100' : ''}`} />
+
         
       
         {product.discounts && product.discounts.length > 0 && (

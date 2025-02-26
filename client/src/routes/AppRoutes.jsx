@@ -3,7 +3,6 @@ import { Routes, Route } from 'react-router-dom';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import PublicLayout from '../layouts/PublicLayout';
-import MainLayout from '../layouts/MainLayout';
 import Home from '../pages/Home';
 import CategoryPage from '../pages/CategoryPage';
 import Product from '../pages/Product';

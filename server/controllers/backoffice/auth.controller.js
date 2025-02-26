@@ -4,50 +4,50 @@ import jwt from 'jsonwebtoken'
 
 const prisma = new PrismaClient()
 
-export const register = async (req, res) => {
-  try {
-    const { email, username, password } = req.body
+// export const register = async (req, res) => {
+//   try {
+//     const { email, username, password } = req.body
 
   
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
+//     const existingUser = await prisma.user.findUnique({
+//       where: { email }
+//     })
 
-    if (existingUser) {
-      return res.status(400).json({ error: 'อีเมลนี้ถูกใช้งานแล้ว' })
-    }
-
- 
-    const hashedPassword = await bcrypt.hash(password, 10)
+//     if (existingUser) {
+//       return res.status(400).json({ error: 'อีเมลนี้ถูกใช้งานแล้ว' })
+//     }
 
  
-    const user = await prisma.user.create({
-      data: {
-        email,
-        username,
-        password: hashedPassword
-      }
-    })
+//     const hashedPassword = await bcrypt.hash(password, 10)
+
+ 
+//     const user = await prisma.user.create({
+//       data: {
+//         email,
+//         username,
+//         password: hashedPassword
+//       }
+//     })
 
   
-    const token = jwt.sign(
-      { email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    )
+//     const token = jwt.sign(
+//       { email: user.email },
+//       process.env.JWT_SECRET,
+//       { expiresIn: '7d' }
+//     )
 
-    res.status(201).json({
-      token,
-      user: {
-        email: user.email,
-        username: user.username
-      }
-    })
-  } catch (error) {
-    console.error('Registration error:', error)
-    res.status(500).json({ error: 'ไม่สามารถลงทะเบียนได้' })
-  }
-}
+//     res.status(201).json({
+//       token,
+//       user: {
+//         email: user.email,
+//         username: user.username
+//       }
+//     })
+//   } catch (error) {
+//     console.error('Registration error:', error)
+//     res.status(500).json({ error: 'ไม่สามารถลงทะเบียนได้' })
+//   }
+// }
 
 export const login = async (req, res) => {
   try {
@@ -75,6 +75,9 @@ export const login = async (req, res) => {
       { expiresIn: '7d' }
     )
 
+    console.log('Generated Token:', token);
+
+
     res.json({
       token,
       user: {
@@ -88,22 +91,22 @@ export const login = async (req, res) => {
   }
 }
 
-export const getMe = async (req, res) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email: req.user.email }
-    })
+// export const getMe = async (req, res) => {
+//   try {
+//     const user = await prisma.user.findUnique({
+//       where: { email: req.user.email }
+//     })
 
-    if (!user) {
-      return res.status(404).json({ error: 'ไม่พบผู้ใช้' })
-    }
+//     if (!user) {
+//       return res.status(404).json({ error: 'ไม่พบผู้ใช้' })
+//     }
 
-    res.json({
-      email: user.email,
-      username: user.username,
-    })
-  } catch (error) {
-    console.error('Get current user error:', error)
-    res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลผู้ใช้ได้' })
-  }
-}
+//     res.json({
+//       email: user.email,
+//       username: user.username,
+//     })
+//   } catch (error) {
+//     console.error('Get current user error:', error)
+//     res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลผู้ใช้ได้' })
+//   }
+// }

@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "../ERD.svg"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer { //ลูกค้า
+  customerID  String   @id @default(uuid())
+  firstname   String
+  lastname    String
+  email       String   @unique
+  password    String
+  phonenumber String
+  address     String
+  orders      Order[]
+  carts       Cart[]
+}
+
+
+
+model Category { //ประเภทสินค้า
+  categoryID   String    @id @default(uuid())
+  categoryName String
+  products     Product[]
+}
+
+model Product { //สินค้า
+  productID    String       @id @default(uuid())
+  productName  String
+  description  String?
+  productImage String?
+  price        Float
+  stockQuantity Int
+  categoryID   String
+  category     Category  @relation(fields: [categoryID], references: [categoryID])
+  orderDetails OrderDetail[]
+  discounts     ProductDiscount[]
+  carts        Cart[]
+}
+
+model Discount {
+  discountID    String    @id @default(uuid())
+  discountType  String    // ประเภทส่วนลด (เปอร์เซ็นต์หรือจำนวนเงิน)
+  discountValue Float     // มูลค่าส่วนลด
+  description   String    // คำอธิบายส่วนลด
+}
+
+model ProductDiscount {
+  productDiscountID String   @id @default(uuid())
+  discountID         String   // รหัสส่วนลด
+  productID         String   // รหัสสินค้า
+  discountType      String   // ประเภทส่วนลด
+  discountValue     Float    // มูลค่าส่วนลด
+  startDate         DateTime // วันที่เริ่มต้นส่วนลด
+  endDate           DateTime // วันที่สิ้นสุดส่วนลด
+  isActive          Boolean  // สถานะการใช้งาน 
+  product           Product  @relation(fields: [productID], references: [productID])
+}
+
+model Cart { //ตะกร้าสินค้า
+  cartID   String  @id @default(uuid())
+  customerID String
+  productID  String
+  qty        Int
+  total      Float
+  customer   Customer   @relation(fields: [customerID], references: [customerID])
+  product    Product    @relation(fields: [productID], references: [productID])
+}
+
+model Order { //ออเดอร์
+  orderID     String       @id @default(uuid())
+  customerID  String
+  orderdate   DateTime
+  totalAmount Float
+  status      String
+  address     String
+  customer    Customer   @relation(fields: [customerID], references: [customerID])
+  orderDetails OrderDetail[]
+  payment     Payment?   
+}
+
+model OrderDetail { //รายละเอียดออเดอร์
+  orderDetailID String  @id @default(uuid())
+  orderID       String
+  productID     String
+  quantity      Int
+  price         Float
+  order         Order   @relation(fields: [orderID], references: [orderID])
+  product       Product @relation(fields: [productID], references: [productID])
+}
+
+model Payment { //ลูกค้าชำระเงิน
+  paymentID     String  @id @default(uuid())
+  orderID       String  @unique
+  paymentDate   DateTime
+  slip          String?
+  amount        Float
+  paymentMethod String
+  order         Order   @relation(fields: [orderID], references: [orderID])
+}
+
+model User {
+  userID    String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

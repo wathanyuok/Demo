@@ -4,22 +4,7 @@ const prisma = new PrismaClient()
 
 export const getDiscounts = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1
-    const limit = parseInt(req.query.limit) || 10
-    const search = req.query.search || ''
-    const skip = (page - 1) * limit
-
-    const searchLower = search.toLowerCase()
-    const where = search ? {
-      OR: [
-        { description: { 
-          contains: searchLower
-        }},
-        { discountType: { 
-          contains: searchLower
-        }}
-      ]
-    } : {}
+   
 
     const totalItems = await prisma.discount.count({ where })
     const totalPages = Math.ceil(totalItems / limit)

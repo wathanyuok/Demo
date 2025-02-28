@@ -3,19 +3,18 @@ import { toast } from 'react-hot-toast'
 import axios from '../../api/axios'
 import { useSearchParams } from 'react-router-dom'
 
-export default function Categories() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [categoryName, setCategoryName] = useState('')
-  const [editingId, setEditingId] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [pagination, setPagination] = useState({
-    currentPage: 1,
+export default function Categories() { // สร้าง component หลักชื่อ Categories
+  const [searchParams, setSearchParams] = useSearchParams() // ใช้สำหรับจัดการ query parameters (เช่น page และ search)
+  const [categories, setCategories] = useState([]) // state สำหรับเก็บข้อมูลหมวดหมู่
+  const [loading, setLoading] = useState(true) // state สำหรับสถานะการโหลดข้อมูล
+  const [showModal, setShowModal] = useState(false) // state สำหรับควบคุมการแสดง Modal
+  const [categoryName, setCategoryName] = useState('') // state สำหรับเก็บชื่อหมวดหมู่ที่กรอกในฟอร์ม
+  const [editingId, setEditingId] = useState(null) // state สำหรับเก็บ ID ของหมวดหมู่ที่กำลังแก้ไข
+  const [searchTerm, setSearchTerm] = useState('') // state สำหรับเก็บคำค้นหาที่กรอกในช่องค้นหา
+  const [pagination, setPagination] = useState({ // state สำหรับจัดการข้อมูลการแบ่งหน้า (pagination)
     totalPages: 1,
     totalItems: 0,
-    itemsPerPage: 5
+    itemsPerPage: 1
   })
 
   const fetchCategories = async () => {
@@ -23,7 +22,7 @@ export default function Categories() {
       setLoading(true)
       const page = searchParams.get('page') || 1
       const search = searchParams.get('search') || ''
-      
+
       const response = await axios.get('/api/backoffice/categories', {
         params: {
           page,
@@ -44,6 +43,7 @@ export default function Categories() {
       console.error('Error fetching categories:', error)
       toast.error('ไม่สามารถโหลดข้อมูลได้')
       setCategories([])
+
     } finally {
       setLoading(false)
     }
@@ -52,6 +52,8 @@ export default function Categories() {
   useEffect(() => {
     fetchCategories()
   }, [searchParams])
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -107,13 +109,18 @@ export default function Categories() {
   }
 
   const Modal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
-      <div className="bg-white rounded-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="fixed inset-0 bg-blue-500 bg-opacity-30 flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="bg-white rounded-lg p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+
+
         <h2 className="text-xl font-semibold mb-4">
           {editingId ? 'แก้ไขหมวดหมู่' : 'เพิ่มหมวดหมู่'}
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
+
             <input
               type="text"
               value={categoryName}
@@ -124,6 +131,7 @@ export default function Categories() {
               autoFocus
             />
           </div>
+          
           <div className="flex justify-end space-x-2">
             <button
               type="button"
@@ -148,6 +156,7 @@ export default function Categories() {
     return (
       <div className="flex justify-center items-center h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+
       </div>
     )
   }
@@ -167,8 +176,7 @@ export default function Categories() {
             />
             <button
               type="submit"
-              className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
-            >
+              className="bg-gradient-to-r from-[#FFB6C1] via-[#FFD700] to-[#87CEEB] text-white px-4 py-2 rounded-lg hover:from-[#FFD700] hover:via-[#FF69B4] hover:to-[#87CEEB]"            >
               ค้นหา
             </button>
           </form>
@@ -178,8 +186,7 @@ export default function Categories() {
               setEditingId(null)
               setShowModal(true)
             }}
-            className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700"
-          >
+            className="bg-gradient-to-r from-[#FFB6C1] via-[#FFD700] to-[#87CEEB] text-white px-4 py-2 rounded-lg hover:from-[#FFD700] hover:via-[#FF69B4] hover:to-[#87CEEB]"          >
             เพิ่มหมวดหมู่ใหม่
           </button>
         </div>
@@ -205,6 +212,7 @@ export default function Categories() {
               </th>
             </tr>
           </thead>
+
           <tbody className="bg-white divide-y divide-gray-200">
             {categories.length > 0 ? (
               categories.map((category, index) => (
@@ -220,6 +228,7 @@ export default function Categories() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {category.productCount} รายการ
                   </td>
+
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button
                       onClick={() => handleEdit(category)}
@@ -252,6 +261,7 @@ export default function Categories() {
           <div className="text-sm text-gray-700">
             แสดง {categories.length} รายการ จากทั้งหมด {pagination.totalItems} รายการ
           </div>
+          
           <div className="flex gap-2">
             <button
               onClick={() => handlePageChange(pagination.currentPage - 1)}
@@ -265,11 +275,10 @@ export default function Categories() {
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
-                  className={`px-4 py-2 rounded-lg ${
-                    pagination.currentPage === page
-                      ? 'bg-primary-600 text-white'
-                      : 'border hover:bg-gray-50'
-                  }`}
+                  className={`px-4 py-2 rounded-lg ${pagination.currentPage === page
+                    ? 'bg-primary-600 text-white'
+                    : 'border hover:bg-gray-50'
+                    }`}
                 >
                   {page}
                 </button>

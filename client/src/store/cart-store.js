@@ -13,11 +13,7 @@ const useCartStore = create((set, get) => ({
       // TODO: ต้องเปลี่ยน customerID ตามระบบ authentication ของคุณ
       const customerID = localStorage.getItem('customerID');
       
-      const response = await axios.post('http://localhost:8000/api/cart', {
-        customerID,
-        productID,
-        qty
-      });
+
       
       // อัพเดทรายการในตะกร้า
       const cartItems = get().cartItems;

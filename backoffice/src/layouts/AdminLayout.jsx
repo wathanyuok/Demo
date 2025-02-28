@@ -1,29 +1,31 @@
 // src/backoffice/layouts/AdminLayout.jsx
 import { useState } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { 
-  LayoutGrid, 
-  Package, 
-  Tags, 
+import {
+  LayoutGrid,
+  Package,
+  Tags,
   Settings,
   ChevronDown,
   Menu,
   X,
   Percent,
+  TicketPercent,
+  ListOrdered,
   LogOut
 } from 'lucide-react'
 
 export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const navigate = useNavigate()
 
   const menuItems = [
+    { icon: Tags, name: 'หมวดหมู่สินค้า', path: '/categories' },
     { icon: Package, name: 'จัดการสินค้า', path: '/products' },
-    { icon: Tags, name: 'ประเภทสินค้า', path: '/categories' },
-    { icon: Percent, name: 'จัดการส่วนลด', path: '/discounts' },
-    { icon: Percent, name: 'จัดการออเดอร์', path: '/orders' },
-   
+    { icon: TicketPercent, name: 'จัดการส่วนลด', path: '/discounts' },
+    { icon: ListOrdered, name: 'จัดการออเดอร์', path: '/orders' },
+
+
   ]
 
   const handleLogout = () => {
@@ -41,7 +43,9 @@ export default function AdminLayout() {
       `}>
         <div className="h-full px-3 py-4 overflow-y-auto bg-white border-r">
           <div className="flex items-center justify-between mb-6 px-3">
-            <span className="text-xl font-bold text-primary-600">Manga Admin</span>
+            <span className="text-xl font-bold text-[#FF69B4] bg-gradient-to-r from-[#FFB6C1] via-[#FFD700] to-[#87CEEB] bg-clip-text text-transparent">
+              Manga Admin
+            </span>
             <button
               onClick={() => setIsSidebarOpen(false)}
               className="md:hidden"
@@ -49,20 +53,21 @@ export default function AdminLayout() {
               <X className="w-5 h-5" />
             </button>
           </div>
-          
+
           <ul className="space-y-2">
             {menuItems.map((item) => (
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  className="flex items-center p-3 text-gray-600 rounded-lg hover:bg-gray-100"
-                >
+                  className="flex items-center p-3 text-[#66b4de] rounded-lg hover:bg-gradient-to-r hover:from-[#FFB6C1] hover:via-[#FFD700] hover:to-[#87CEEB]"                  >
                   <item.icon className="w-5 h-5" />
                   <span className="ml-3">{item.name}</span>
                 </Link>
               </li>
             ))}
           </ul>
+
+          
           <div className="mt-auto border-t p-4">
             <button
               onClick={handleLogout}
@@ -88,17 +93,17 @@ export default function AdminLayout() {
           >
             <Menu className="w-6 h-6" />
           </button>
-          
-          <div className="flex items-center space-x-4">
+
+          <div className="flex items-left space-x-100">
             <div className="relative">
               <button className="flex items-center space-x-1 text-sm">
                 <img
-                  src="https://ui-avatars.com/api/?name=Admin"
+                  src="https://ui-avatars.com/api/?background=00C1D0&color=fff&name=Admin"
                   alt="Admin"
                   className="w-8 h-8 rounded-full"
                 />
                 <span>Admin</span>
-               
+
               </button>
             </div>
           </div>

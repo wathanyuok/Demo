@@ -1,43 +1,59 @@
-// src/pages/Products.jsx
+// นำเข้า React hooks ที่จำเป็น เช่น useState และ useEffect
 import { useState, useEffect } from 'react'
+// นำเข้า Link สำหรับการสร้างลิงก์, useNavigate สำหรับการนำทาง, และ useSearchParams สำหรับจัดการ query parameters
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+// นำเข้า axios instance ที่กำหนดค่าไว้แล้วสำหรับเรียก API
 import axios from '../../api/axios'
+// นำเข้า context สำหรับจัดการข้อมูลผู้ใช้ที่เข้าสู่ระบบ (authentication)
 import { useAuth } from '../../contexts/AuthContext'
 
+// ประกาศ component Products ซึ่งเป็นฟังก์ชันหลักของหน้าแสดงรายการสินค้า
 export default function Products() {
+  // สร้างตัวแปร navigate เพื่อใช้สำหรับนำทางไปยังหน้าอื่น
   const navigate = useNavigate()
+  // สร้างตัวแปร searchParams และ setSearchParams เพื่อจัดการ query parameters ใน URL
   const [searchParams, setSearchParams] = useSearchParams()
-  
+
+  // สร้าง state สำหรับเก็บข้อมูลสินค้า
   const [products, setProducts] = useState([])
+  // สร้าง state สำหรับแสดงสถานะ loading ขณะโหลดข้อมูล
   const [loading, setLoading] = useState(true)
+  // สร้าง state สำหรับเก็บข้อความข้อผิดพลาด ถ้ามีปัญหาในการโหลดข้อมูล
   const [error, setError] = useState(null)
+  // สร้าง state สำหรับเก็บคำค้นหาสินค้า โดยค่าเริ่มต้นจะดึงจาก query parameter 'search'
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '')
+  // สร้าง state สำหรับจัดการข้อมูลการแบ่งหน้า (pagination)
   const [pagination, setPagination] = useState({
-    currentPage: Number(searchParams.get('page')) || 1,
-    totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 10
+    currentPage: Number(searchParams.get('page')) || 1, // หน้าปัจจุบัน (เริ่มจาก query parameter 'page')
+    totalPages: 1, // จำนวนหน้าทั้งหมด (ค่าเริ่มต้นคือ 1)
+    totalItems: 0, // จำนวนสินค้าทั้งหมด
+    itemsPerPage: 10 // จำนวนสินค้าต่อหน้า (ค่าเริ่มต้นคือ 10)
   })
+  // ดึง token จาก AuthContext เพื่อใช้สำหรับยืนยันตัวตนกับ API
   const { token } = useAuth()
 
+  // ใช้ useEffect เพื่อตรวจสอบ token และตั้งค่า header ของ axios เมื่อ component ถูกโหลดครั้งแรก
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token) {
+    const token = localStorage.getItem('token') // ดึง token จาก localStorage
+    if (!token) { // ถ้าไม่มี token ให้ส่งผู้ใช้ไปที่หน้า login
       navigate('/login')
       return
     }
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}` // ตั้งค่า Authorization header ให้กับ axios
   }, [navigate])
 
+  // ใช้ useEffect เพื่อตรวจสอบการเปลี่ยนแปลงของ searchParams และเรียก fetchProducts เพื่อโหลดข้อมูลสินค้าใหม่
   useEffect(() => {
     fetchProducts()
   }, [searchParams])
 
+  // ฟังก์ชันสำหรับดึงข้อมูลสินค้าจาก API
   const fetchProducts = async () => {
     try {
-      const page = searchParams.get('page') || 1
-      const search = searchParams.get('search') || ''
-      
+      const page = searchParams.get('page') || 1 // ดึงหมายเลขหน้าจาก query parameter 'page'
+      const search = searchParams.get('search') || '' // ดึงคำค้นหาจาก query parameter 'search'
+
+      // ส่ง request ไปยัง API เพื่อดึงข้อมูลสินค้า โดยส่ง query parameters page, search และ limit ไปด้วย
       const response = await axios.get('/api/backoffice/products', {
         params: {
           page,
@@ -45,59 +61,63 @@ export default function Products() {
           limit: pagination.itemsPerPage
         },
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}` // ส่ง token ใน header เพื่อยืนยันตัวตน
         }
       })
 
-      setProducts(response.data.products)
+      // อัปเดต state ด้วยข้อมูลสินค้าที่ได้รับจาก API
+      setProducts(response.data.products) // เก็บรายการสินค้าใน state products
       setPagination({
         ...pagination,
-        currentPage: Number(page),
-        totalPages: response.data.totalPages,
-        totalItems: response.data.totalItems
+        currentPage: Number(page), // อัปเดตหน้าปัจจุบันตาม query parameter 'page'
+        totalPages: response.data.totalPages, // อัปเดตจำนวนหน้าทั้งหมดจาก API
+        totalItems: response.data.totalItems // อัปเดตจำนวนสินค้าทั้งหมดจาก API
       })
-      setError(null)
+      setError(null) // ล้างข้อความข้อผิดพลาด (ถ้ามี)
     } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        navigate('/login')
+      if (err.response?.status === 401) { // ถ้าเกิดข้อผิดพลาด HTTP status code 401 (Unauthorized)
+        localStorage.removeItem('token') // ลบ token ออกจาก localStorage
+        localStorage.removeItem('user') // ลบข้อมูลผู้ใช้ออกจาก localStorage
+        navigate('/login') // ส่งผู้ใช้ไปที่หน้า login
         return
       }
-      setError('ไม่สามารถโหลดข้อมูลสินค้าได้')
-      console.error('Error fetching products:', err)
+      setError('ไม่สามารถโหลดข้อมูลสินค้าได้') // ตั้งค่าข้อความข้อผิดพลาดใน state error
+      console.error('Error fetching products:', err) // แสดงข้อผิดพลาดใน console สำหรับ debug
     } finally {
-      setLoading(false)
+      setLoading(false) // ปิดสถานะ loading หลังจากโหลดเสร็จสิ้น (ไม่ว่าจะสำเร็จหรือเกิดข้อผิดพลาด)
     }
   }
 
+  // ฟังก์ชันจัดการการค้นหา เมื่อผู้ใช้กรอกคำค้นหาและกดปุ่มค้นหา
   const handleSearch = (e) => {
-    e.preventDefault()
-    setSearchParams({ 
-      page: 1,
-      search: searchTerm
+    e.preventDefault() // ป้องกันไม่ให้ฟอร์ม reload หน้าเว็บเมื่อกด submit
+    setSearchParams({
+      page: 1, // รีเซ็ตให้เริ่มที่หน้าแรกเมื่อมีการค้นหาใหม่
+      search: searchTerm // ตั้งค่าคำค้นหาใน query parameter 'search'
     })
   }
 
+  // ฟังก์ชันจัดการการเปลี่ยนหน้า เมื่อผู้ใช้คลิกปุ่มเปลี่ยนหน้า (ก่อนหน้า/ถัดไป)
   const handlePageChange = (newPage) => {
-    if (newPage < 1 || newPage > pagination.totalPages) return
-    
-    setSearchParams({ 
-      page: newPage,
-      ...(searchTerm && { search: searchTerm })
+    if (newPage < 1 || newPage > pagination.totalPages) return // ป้องกันการเปลี่ยนไปหน้าที่อยู่นอกขอบเขต
+
+    setSearchParams({
+      page: newPage, // ตั้งค่าหน้าใหม่ใน query parameter 'page'
+      ...(searchTerm && { search: searchTerm }) // ถ้ามีคำค้นหา ให้คงไว้ใน query parameter 'search'
     })
   }
 
+  // ฟังก์ชันจัดการการลบสินค้า เมื่อผู้ใช้คลิกปุ่มลบสินค้าในแต่ละแถวของตารางสินค้า
   const handleDelete = async (productID) => {
-    if (!window.confirm('คุณต้องการลบสินค้านี้ใช่หรือไม่?')) return
+    if (!window.confirm('คุณต้องการลบสินค้านี้ใช่หรือไม่?')) return // แสดงข้อความยืนยันก่อนลบ
 
     try {
       await axios.delete(`/api/backoffice/products/${productID}`, {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}` // ส่ง token ใน header เพื่อยืนยันตัวตนกับ API 
         }
       })
-      fetchProducts()
+      fetchProducts() // โหลดข้อมูลสินค้าใหม่หลังจากลบสำเร็จ
     } catch (err) {
       if (err.response?.status === 401) {
         localStorage.removeItem('token')
@@ -110,62 +130,75 @@ export default function Products() {
     }
   }
 
+  // ฟังก์ชันคำนวณราคาหลังหักส่วนลด
   const calculateDiscountedPrice = (price, discount) => {
-    if (!discount) return price
-    if (!discount.startDate || !discount.endDate) return price
+    if (!discount) return price // ถ้าไม่มีข้อมูลส่วนลด ให้คืนค่าราคาปกติ
+    if (!discount.startDate || !discount.endDate) return price // ถ้าส่วนลดไม่มีวันที่เริ่มต้นหรือสิ้นสุด ให้คืนค่าราคาปกติ
 
-    const now = new Date()
-    const startDate = new Date(discount.startDate)
-    const endDate = new Date(discount.endDate)
+    const now = new Date() // วันที่และเวลาปัจจุบัน
+    const startDate = new Date(discount.startDate) // แปลงวันที่เริ่มต้นของส่วนลดเป็น object Date
+    const endDate = new Date(discount.endDate) // แปลงวันที่สิ้นสุดของส่วนลดเป็น object Date
 
-    if (now < startDate || now > endDate) return price
+    if (now < startDate || now > endDate) return price // ถ้าส่วนลดไม่อยู่ในช่วงวันที่ที่กำหนด ให้คืนค่าราคาปกติ
 
-    return discount.discountType === 'percentage'
-      ? price - (price * discount.discountValue / 100)
-      : price - discount.discountValue
+    // คำนวณราคาหลังหักส่วนลด
+    return discount.discountType === 'percentage' // ตรวจสอบว่าประเภทส่วนลดเป็นเปอร์เซ็นต์หรือไม่
+      ? price - (price * discount.discountValue / 100) // ถ้าเป็นเปอร์เซ็นต์ ให้คำนวณราคาหลังหักเปอร์เซ็นต์ส่วนลด
+      : price - discount.discountValue // ถ้าเป็นจำนวนเงิน ให้ลบจำนวนเงินส่วนลดออกจากราคา
   }
 
+  // ฟังก์ชันตรวจสอบว่าส่วนลดยังใช้งานได้อยู่หรือไม่
   const isDiscountActive = (discount) => {
-    if (!discount || !discount.startDate || !discount.endDate) return false
+    if (!discount || !discount.startDate || !discount.endDate) return false // ถ้าไม่มีข้อมูลส่วนลด หรือไม่มีวันที่เริ่มต้น/สิ้นสุด ให้คืนค่า false
 
-    const now = new Date()
-    const startDate = new Date(discount.startDate)
-    const endDate = new Date(discount.endDate)
+    const now = new Date() // วันที่และเวลาปัจจุบัน
+    const startDate = new Date(discount.startDate) // แปลงวันที่เริ่มต้นของส่วนลดเป็น object Date
+    const endDate = new Date(discount.endDate) // แปลงวันที่สิ้นสุดของส่วนลดเป็น object Date
 
-    return now >= startDate && now <= endDate
+    return now >= startDate && now <= endDate // คืนค่า true ถ้าวันที่ปัจจุบันอยู่ในช่วงวันที่เริ่มต้นถึงสิ้นสุดของส่วนลด
   }
 
+  // แสดง loading indicator ถ้ากำลังโหลดข้อมูลสินค้า
   if (loading) {
     return (
       <div className="flex justify-center items-center h-full">
+        {/* วงกลมหมุนแสดงสถานะกำลังโหลด */}
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
+  // เริ่มต้นการแสดงผลของ component
   return (
+    // คอนเทนเนอร์หลักของหน้า ใช้ padding รอบด้าน
     <div className="p-6">
+ส่วนหัวของหน้า แสดงชื่อ "จัดการสินค้า" และปุ่มเพิ่มสินค้า
       <div className="flex justify-between items-center mb-6">
+      // หัวข้อของหน้า
         <h1 className="text-2xl font-bold text-gray-800">จัดการสินค้า</h1>
+      // ปุ่มลิงก์ไปยังหน้าสำหรับเพิ่มสินค้าใหม่
         <Link
-          to="/products/add"
+          to="/products/add" // ลิงก์ไปยังหน้าสำหรับเพิ่มสินค้าใหม่
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           เพิ่มสินค้า
         </Link>
       </div>
 
+    // ฟอร์มสำหรับค้นหาสินค้า
       <form onSubmit={handleSearch} className="mb-6">
         <div className="flex gap-2">
+        // ช่องกรอกคำค้นหา
           <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="ค้นหาสินค้า..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+            type="text" // กำหนดให้เป็น input ชนิดข้อความ
+            value={searchTerm} // คำที่ผู้ใช้กรอกในช่องค้นหา
+            onChange={(e) => setSearchTerm(e.target.value)} // อัปเดต state searchTerm เมื่อผู้ใช้พิมพ์ข้อความ
+            placeholder="ค้นหาสินค้า..." // ข้อความตัวอย่างในช่องค้นหา
+            className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" // สไตล์ของ input (ใช้ Tailwind CSS)
           />
+        // ปุ่มสำหรับกดค้นหา
           <button
-            type="submit"
+            type="submit" // กำหนดให้ปุ่มนี้เป็นปุ่ม submit ของฟอร์ม
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             ค้นหา
@@ -173,104 +206,125 @@ export default function Products() {
         </div>
       </form>
 
+    // ถ้ามีข้อผิดพลาด ให้แสดงข้อความข้อผิดพลาดและปุ่มลองใหม่
       {error ? (
         <div className="text-center text-red-600 p-4">
-          <p>{error}</p>
-          <button 
-            onClick={fetchProducts}
+          <p>{error}</p> {/* แสดงข้อความข้อผิดพลาด */}
+          <button
+            onClick={fetchProducts} // เรียกฟังก์ชัน fetchProducts เพื่อโหลดข้อมูลใหม่
             className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            ลองใหม่
+            ลองใหม่ {/* ปุ่มลองใหม่ */}
           </button>
         </div>
       ) : (
         <>
+          {/* ส่วนของตารางแสดงรายการสินค้า */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
+              {/* ส่วนหัวของตาราง */}
               <thead className="bg-gray-50">
                 <tr>
+                  {/* คอลัมน์สำหรับหัวข้อในตาราง */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    รูปภาพ
+                    รูปภาพ {/* คอลัมน์สำหรับรูปภาพสินค้า */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ชื่อสินค้า
+                    ชื่อสินค้า {/* คอลัมน์สำหรับชื่อสินค้า */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ราคา
+                    ราคา {/* คอลัมน์สำหรับราคาสินค้า */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    จำนวน
+                    จำนวน {/* คอลัมน์สำหรับจำนวนสินค้า */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ส่วนลด
+                    ส่วนลด {/* คอลัมน์สำหรับส่วนลด */}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    จัดการ
+                    จัดการ {/* คอลัมน์สำหรับปุ่มจัดการ (แก้ไข/ลบ) */}
                   </th>
                 </tr>
               </thead>
+
+
+              // ส่วนเนื้อหาของตาราง (แสดงข้อมูลสินค้า)
               <tbody className="bg-white divide-y divide-gray-200">
+  // วนลูปแสดงข้อมูลสินค้าทั้งหมด
                 {products.map((product) => {
+                  // ค้นหาส่วนลดที่กำลังใช้งานอยู่
                   const activeDiscount = product.discounts?.find(isDiscountActive)
                   return (
+                    // แถวของแต่ละสินค้า ใช้ product.productID เป็น key
                     <tr key={product.productID}>
+                      {/* คอลัมน์รูปภาพสินค้า */}
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <img 
-                          src={product.productImage || '/placeholder.png'} 
-                          alt={product.productName}
-                          className="h-16 w-16 object-cover rounded"
+                        <img
+                          src={product.productImage || '/placeholder.png'} // ใช้รูปภาพสินค้าหรือ placeholder หากไม่มีรูปภาพสินค้า
+                          alt={product.productName} // ข้อความสำรองเมื่อรูปภาพไม่แสดงผล
+                          className="h-16 w-16 object-cover rounded" // กำหนดขนาดและการครอบตัดรูปภาพให้เป็นสี่เหลี่ยมจัตุรัสมุมมน
                         />
                       </td>
+                      {/* คอลัมน์ชื่อสินค้า */}
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {product.productName}
+                          {product.productName} {/* ชื่อสินค้า */}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {product.category?.categoryName}
+                          {product.category?.categoryName} {/* หมวดหมู่สินค้า */}
                         </div>
                       </td>
+                      {/* คอลัมน์ราคา */}
                       <td className="px-6 py-4">
+                        {/* แสดงราคาปกติหรือราคาหลังหักส่วนลด */}
                         <div className={`text-sm ${activeDiscount ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                          ฿{product.price.toLocaleString()}
+                          ฿{product.price.toLocaleString()} {/* ราคาปกติ */}
                         </div>
                         {activeDiscount && (
                           <div className="text-sm text-green-600 font-medium">
-                            ฿{calculateDiscountedPrice(product.price, activeDiscount).toLocaleString()}
+                            ฿{calculateDiscountedPrice(product.price, activeDiscount).toLocaleString()} {/* ราคาหลังหักส่วนลด */}
                           </div>
                         )}
                       </td>
+                      {/* คอลัมน์จำนวนในคลัง */}
                       <td className="px-6 py-4">
-                        <div className={`text-sm ${
-                          product.stockQuantity < 10 ? 'text-red-600' : 'text-gray-900'
-                        }`}>
-                          {product.stockQuantity}
+                        {/* แสดงจำนวนในคลังพร้อมเปลี่ยนสีตามเงื่อนไข */}
+                        <div className={`text-sm ${product.stockQuantity < 10 ? 'text-orange-600' : 'text-gray-900'}`}>
+                          {product.stockQuantity} {/* จำนวนในคลัง */}
                         </div>
                       </td>
+                      {/* คอลัมน์ส่วนลด */}
                       <td className="px-6 py-4">
-                        {activeDiscount ? (
+                        {activeDiscount ? ( // ถ้ามีส่วนลดที่ใช้งานอยู่
                           <div>
+                            {/* แสดงข้อมูลส่วนลด */}
                             <div className="text-sm text-green-600 font-medium">
                               {activeDiscount.discountType === 'percentage'
-                                ? `${activeDiscount.discountValue}%`
-                                : `฿${activeDiscount.discountValue}`}
+                                ? `${activeDiscount.discountValue}%` /* ส่วนลดเป็นเปอร์เซ็นต์ */
+                                : `฿${activeDiscount.discountValue}`} /* ส่วนลดเป็นจำนวนเงิน */
                             </div>
+                            {/* วันที่สิ้นสุดส่วนลด */}
                             <div className="text-xs text-gray-500">
-                              ถึง {new Date(activeDiscount.endDate).toLocaleDateString('th-TH')}
+                              ถึง {new Date(activeDiscount.endDate).toLocaleDateString('th-TH')} {/* วันที่สิ้นสุดส่วนลด */}
                             </div>
                           </div>
                         ) : (
+                          /* ถ้าไม่มีส่วนลด */
                           <div className="text-sm text-gray-500">-</div>
                         )}
                       </td>
+                      {/* คอลัมน์จัดการ (แก้ไข/ลบ) */}
                       <td className="px-6 py-4 text-sm font-medium space-x-2">
+                        {/* ปุ่มแก้ไขสินค้า */}
                         <Link
-                          to={`/products/edit/${product.productID}`}
+                          to={`/products/edit/${product.productID}`} // ลิงก์ไปยังหน้าสำหรับแก้ไขสินค้านั้นๆ
                           className="text-blue-600 hover:text-blue-900"
                         >
                           แก้ไข
                         </Link>
+                        {/* ปุ่มลบสินค้า */}
                         <button
-                          onClick={() => handleDelete(product.productID)}
+                          onClick={() => handleDelete(product.productID)} // เรียกฟังก์ชัน handleDelete เพื่อลบสินค้า
                           className="text-red-600 hover:text-red-900"
                         >
                           ลบ
@@ -280,46 +334,63 @@ export default function Products() {
                   )
                 })}
               </tbody>
+
+// ปิดตาราง
             </table>
+
+// ปิด container ของตาราง
           </div>
 
- 
+
+          // คอนเทนเนอร์สำหรับส่วนการแบ่งหน้า (Pagination)
           <div className="mt-4 flex justify-between items-center">
+  // แสดงข้อความจำนวนรายการที่แสดงผลและจำนวนรายการทั้งหมด
             <div className="text-sm text-gray-700">
               แสดง {products.length} รายการ จากทั้งหมด {pagination.totalItems} รายการ
             </div>
+
+  // คอนเทนเนอร์สำหรับปุ่มเปลี่ยนหน้า
             <div className="flex gap-2">
+    // ปุ่มย้อนกลับหน้าก่อนหน้า
               <button
-                onClick={() => handlePageChange(pagination.currentPage - 1)}
-                disabled={pagination.currentPage === 1}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                onClick={() => handlePageChange(pagination.currentPage - 1)} // เรียกฟังก์ชัน handlePageChange เพื่อเปลี่ยนไปหน้าก่อนหน้า
+                disabled={pagination.currentPage === 1} // ปิดการใช้งานปุ่มถ้าอยู่ที่หน้าแรกแล้ว
+                className="px-4 py-2 border rounded-lg disabled:opacity-50" // สไตล์ของปุ่ม พร้อมลดความโปร่งใสเมื่อปิดการใช้งาน
               >
-                ก่อนหน้า
+                ก่อนหน้า {/* ข้อความในปุ่ม */}
               </button>
+
+    // คอนเทนเนอร์สำหรับปุ่มหมายเลขหน้า
               <div className="flex items-center gap-1">
-                {[...Array(pagination.totalPages)].map((_, i) => (
+                {[...Array(pagination.totalPages)].map((_, i) => ( // สร้าง array ตามจำนวนหน้าทั้งหมดแล้ววนลูป
+                  // ปุ่มหมายเลขหน้า
                   <button
-                    key={i + 1}
-                    onClick={() => handlePageChange(i + 1)}
-                    className={`px-4 py-2 rounded-lg ${
-                      pagination.currentPage === i + 1
-                        ? 'bg-blue-600 text-white'
-                        : 'border hover:bg-gray-50'
-                    }`}
+                    key={i + 1} // ใช้ index + 1 เป็น key ของแต่ละปุ่ม
+                    onClick={() => handlePageChange(i + 1)} // เรียกฟังก์ชัน handlePageChange เพื่อเปลี่ยนไปหน้าที่เลือก
+                    className={`px-4 py-2 rounded-lg ${pagination.currentPage === i + 1
+                      ? 'bg-blue-600 text-white' // ถ้าเป็นหน้าปัจจุบัน ให้เปลี่ยนสีพื้นหลังเป็นสีน้ำเงินและข้อความเป็นสีขาว
+                      : 'border hover:bg-gray-50' // ถ้าไม่ใช่หน้าปัจจุบัน ให้มี border และเปลี่ยนสีเมื่อ hover
+                      }`}
                   >
-                    {i + 1}
+                    {i + 1} {/* แสดงหมายเลขหน้า */}
                   </button>
                 ))}
               </div>
+
+    // ปุ่มไปหน้าถัดไป
               <button
-                onClick={() => handlePageChange(pagination.currentPage + 1)}
-                disabled={pagination.currentPage === pagination.totalPages}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                onClick={() => handlePageChange(pagination.currentPage + 1)} // เรียกฟังก์ชัน handlePageChange เพื่อเปลี่ยนไปหน้าถัดไป
+                disabled={pagination.currentPage === pagination.totalPages} // ปิดการใช้งานปุ่มถ้าอยู่ที่หน้าสุดท้ายแล้ว
+                className="px-4 py-2 border rounded-lg disabled:opacity-50" // สไตล์ของปุ่ม พร้อมลดความโปร่งใสเมื่อปิดการใช้งาน
               >
-                ถัดไป
+                ถัดไป {/* ข้อความในปุ่ม */}
               </button>
             </div>
           </div>
+
+
+
+
         </>
       )}
     </div>

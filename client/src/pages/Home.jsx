@@ -1,106 +1,30 @@
 import { useEffect } from 'react';
-import create from 'zustand';
+import ProductCard from '../components/ProductCard';
+import useProductStore from '../store/product-store';
 
-// Mock Data สำหรับมังงะ
-const mockProducts = [
-  {
-    productID: 1,
-    title: "Naruto",
-    description: "มังงะเกี่ยวกับนินจาที่ได้รับความนิยมสูงสุด",
-    price: 300,
-    imageUrl: "https://i.imgur.com/9tCfuNo.jpeg",
-  },
-  {
-    productID: 2,
-    title: "One Piece",
-    description: "เรื่องราวการผจญภัยของโจรสลัด",
-    price: 350,
-    imageUrl: "https://imgur.com/1GxZkAW.jpg",
-  },
-  {
-    productID: 3,
-    title: "Attack on Titan",
-    description: "มังงะแนวดาร์คแฟนตาซี",
-    price: 400,
-    imageUrl: "https://i.imgur.com/tc5RqMl.jpeg",
-  },
-  {
-    productID: 3,
-    title: "Dragon Ball",
-    description: "มังงะแนวผจญภัยและต่อสู้",
-    price: 400,
-    imageUrl: "https://i.imgur.com/XSPR5FL.jpeg",
-  },
-
-  {
-    productID: 1,
-    title: "Naruto",
-    description: "มังงะเกี่ยวกับนินจาที่ได้รับความนิยมสูงสุด",
-    price: 300,
-    imageUrl: "https://i.imgur.com/9tCfuNo.jpeg",
-  },
-  {
-    productID: 2,
-    title: "One Piece",
-    description: "เรื่องราวการผจญภัยของโจรสลัด",
-    price: 350,
-    imageUrl: "https://imgur.com/1GxZkAW.jpg",
-  },
-  {
-    productID: 3,
-    title: "Attack on Titan",
-    description: "มังงะแนวดาร์คแฟนตาซี",
-    price: 400,
-    imageUrl: "https://i.imgur.com/tc5RqMl.jpeg",
-  },
-  {
-    productID: 3,
-    title: "Dragon Ball",
-    description: "มังงะแนวผจญภัยและต่อสู้",
-    price: 400,
-    imageUrl: "https://i.imgur.com/XSPR5FL.jpeg",
-  },
-];
-
-// สร้าง Zustand Store สำหรับจัดการ State
-const useProductStore = create((set) => ({
-  products: [],
-  fetchProducts: () => {
-    // จำลองการเรียก API
-    set({ products: mockProducts });
-  },
-
-  
-}));
-
-// Component สำหรับแสดงสินค้าแต่ละรายการ
-function ProductCard({ product }) {
-  return (
-    <div className="border rounded-lg p-4 shadow-md">
-      <img
-        src={product.imageUrl}
-        alt={product.title}
-        className="w-full h-48 object-cover rounded-md mb-4"
-      />
-      <h2 className="text-lg font-semibold">{product.title}</h2>
-      <p className="text-sm text-gray-600">{product.description}</p>
-      <p className="text-lg font-bold mt-2">฿{product.price}</p>
-    </div>
-  );
-}
-
-// หน้า Home หลัก
+// ประกาศและส่งออกคอมโพเนนต์ Home เป็นค่าเริ่มต้น
 export default function Home() {
+  // ใช้ destructuring เพื่อดึงค่า products และฟังก์ชัน fetchProducts จาก useProductStore
   const { products, fetchProducts } = useProductStore();
 
+  // ใช้ useEffect เพื่อเรียกฟังก์ชัน fetchProducts เมื่อคอมโพเนนต์ถูกเรนเดอร์ครั้งแรก
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, []); // dependency array เป็นค่าว่าง หมายถึงจะทำงานเฉพาะตอน mount
 
+  // เริ่มต้นการ return JSX
   return (
     <div>
+      {/* แสดงหัวข้อ "มังงะยอดนิยม" */}
       <h1 className="text-2xl font-bold mb-6">มังงะยอดนิยม</h1>
+      
+      {/* สร้าง div ที่ใช้ CSS Grid สำหรับการจัดเรียง ProductCard */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {/* 
+          ใช้ .map() เพื่อวนลูปผ่านอาร์เรย์ products และสร้าง ProductCard สำหรับแต่ละ product
+          หมายเหตุ: อาจเกิดข้อผิดพลาดถ้า products เป็น undefined ในตอนแรก
+          ควรเพิ่มการตรวจสอบว่า products มีค่าก่อนใช้ .map() หรือกำหนดค่าเริ่มต้นให้เป็นอาร์เรย์ว่างใน useProductStore
+        */}
         {products.map((product) => (
           <ProductCard key={product.productID} product={product} />
         ))}
@@ -108,5 +32,3 @@ export default function Home() {
     </div>
   );
 }
-
-

@@ -22,7 +22,6 @@ export default function AdminLayout() {
   const menuItems = [
     { icon: Tags, name: 'หมวดหมู่สินค้า', path: '/categories' },
     { icon: Package, name: 'จัดการสินค้า', path: '/products' },
-    { icon: TicketPercent, name: 'จัดการส่วนลด', path: '/discounts' },
     { icon: ListOrdered, name: 'จัดการออเดอร์', path: '/orders' },
 
 

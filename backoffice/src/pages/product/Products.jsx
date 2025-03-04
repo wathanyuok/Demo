@@ -130,34 +130,6 @@ export default function Products() {
     }
   }
 
-  // ฟังก์ชันคำนวณราคาหลังหักส่วนลด
-  const calculateDiscountedPrice = (price, discount) => {
-    if (!discount) return price // ถ้าไม่มีข้อมูลส่วนลด ให้คืนค่าราคาปกติ
-    if (!discount.startDate || !discount.endDate) return price // ถ้าส่วนลดไม่มีวันที่เริ่มต้นหรือสิ้นสุด ให้คืนค่าราคาปกติ
-
-    const now = new Date() // วันที่และเวลาปัจจุบัน
-    const startDate = new Date(discount.startDate) // แปลงวันที่เริ่มต้นของส่วนลดเป็น object Date
-    const endDate = new Date(discount.endDate) // แปลงวันที่สิ้นสุดของส่วนลดเป็น object Date
-
-    if (now < startDate || now > endDate) return price // ถ้าส่วนลดไม่อยู่ในช่วงวันที่ที่กำหนด ให้คืนค่าราคาปกติ
-
-    // คำนวณราคาหลังหักส่วนลด
-    return discount.discountType === 'percentage' // ตรวจสอบว่าประเภทส่วนลดเป็นเปอร์เซ็นต์หรือไม่
-      ? price - (price * discount.discountValue / 100) // ถ้าเป็นเปอร์เซ็นต์ ให้คำนวณราคาหลังหักเปอร์เซ็นต์ส่วนลด
-      : price - discount.discountValue // ถ้าเป็นจำนวนเงิน ให้ลบจำนวนเงินส่วนลดออกจากราคา
-  }
-
-  // ฟังก์ชันตรวจสอบว่าส่วนลดยังใช้งานได้อยู่หรือไม่
-  const isDiscountActive = (discount) => {
-    if (!discount || !discount.startDate || !discount.endDate) return false // ถ้าไม่มีข้อมูลส่วนลด หรือไม่มีวันที่เริ่มต้น/สิ้นสุด ให้คืนค่า false
-
-    const now = new Date() // วันที่และเวลาปัจจุบัน
-    const startDate = new Date(discount.startDate) // แปลงวันที่เริ่มต้นของส่วนลดเป็น object Date
-    const endDate = new Date(discount.endDate) // แปลงวันที่สิ้นสุดของส่วนลดเป็น object Date
-
-    return now >= startDate && now <= endDate // คืนค่า true ถ้าวันที่ปัจจุบันอยู่ในช่วงวันที่เริ่มต้นถึงสิ้นสุดของส่วนลด
-  }
-
   // แสดง loading indicator ถ้ากำลังโหลดข้อมูลสินค้า
   if (loading) {
     return (
@@ -172,7 +144,7 @@ export default function Products() {
   return (
     // คอนเทนเนอร์หลักของหน้า ใช้ padding รอบด้าน
     <div className="p-6">
-ส่วนหัวของหน้า แสดงชื่อ "จัดการสินค้า" และปุ่มเพิ่มสินค้า
+      ส่วนหัวของหน้า แสดงชื่อ "จัดการสินค้า" และปุ่มเพิ่มสินค้า
       <div className="flex justify-between items-center mb-6">
       // หัวข้อของหน้า
         <h1 className="text-2xl font-bold text-gray-800">จัดการสินค้า</h1>
@@ -238,9 +210,7 @@ export default function Products() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     จำนวน {/* คอลัมน์สำหรับจำนวนสินค้า */}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ส่วนลด {/* คอลัมน์สำหรับส่วนลด */}
-                  </th>
+
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     จัดการ {/* คอลัมน์สำหรับปุ่มจัดการ (แก้ไข/ลบ) */}
                   </th>
@@ -250,90 +220,51 @@ export default function Products() {
 
               // ส่วนเนื้อหาของตาราง (แสดงข้อมูลสินค้า)
               <tbody className="bg-white divide-y divide-gray-200">
-  // วนลูปแสดงข้อมูลสินค้าทั้งหมด
-                {products.map((product) => {
-                  // ค้นหาส่วนลดที่กำลังใช้งานอยู่
-                  const activeDiscount = product.discounts?.find(isDiscountActive)
-                  return (
-                    // แถวของแต่ละสินค้า ใช้ product.productID เป็น key
-                    <tr key={product.productID}>
-                      {/* คอลัมน์รูปภาพสินค้า */}
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <img
-                          src={product.productImage || '/placeholder.png'} // ใช้รูปภาพสินค้าหรือ placeholder หากไม่มีรูปภาพสินค้า
-                          alt={product.productName} // ข้อความสำรองเมื่อรูปภาพไม่แสดงผล
-                          className="h-16 w-16 object-cover rounded" // กำหนดขนาดและการครอบตัดรูปภาพให้เป็นสี่เหลี่ยมจัตุรัสมุมมน
-                        />
-                      </td>
-                      {/* คอลัมน์ชื่อสินค้า */}
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {product.productName} {/* ชื่อสินค้า */}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {product.category?.categoryName} {/* หมวดหมู่สินค้า */}
-                        </div>
-                      </td>
-                      {/* คอลัมน์ราคา */}
-                      <td className="px-6 py-4">
-                        {/* แสดงราคาปกติหรือราคาหลังหักส่วนลด */}
-                        <div className={`text-sm ${activeDiscount ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                          ฿{product.price.toLocaleString()} {/* ราคาปกติ */}
-                        </div>
-                        {activeDiscount && (
-                          <div className="text-sm text-green-600 font-medium">
-                            ฿{calculateDiscountedPrice(product.price, activeDiscount).toLocaleString()} {/* ราคาหลังหักส่วนลด */}
-                          </div>
-                        )}
-                      </td>
-                      {/* คอลัมน์จำนวนในคลัง */}
-                      <td className="px-6 py-4">
-                        {/* แสดงจำนวนในคลังพร้อมเปลี่ยนสีตามเงื่อนไข */}
-                        <div className={`text-sm ${product.stockQuantity < 10 ? 'text-orange-600' : 'text-gray-900'}`}>
-                          {product.stockQuantity} {/* จำนวนในคลัง */}
-                        </div>
-                      </td>
-                      {/* คอลัมน์ส่วนลด */}
-                      <td className="px-6 py-4">
-                        {activeDiscount ? ( // ถ้ามีส่วนลดที่ใช้งานอยู่
-                          <div>
-                            {/* แสดงข้อมูลส่วนลด */}
-                            <div className="text-sm text-green-600 font-medium">
-                              {activeDiscount.discountType === 'percentage'
-                                ? `${activeDiscount.discountValue}%` /* ส่วนลดเป็นเปอร์เซ็นต์ */
-                                : `฿${activeDiscount.discountValue}`} /* ส่วนลดเป็นจำนวนเงิน */
-                            </div>
-                            {/* วันที่สิ้นสุดส่วนลด */}
-                            <div className="text-xs text-gray-500">
-                              ถึง {new Date(activeDiscount.endDate).toLocaleDateString('th-TH')} {/* วันที่สิ้นสุดส่วนลด */}
-                            </div>
-                          </div>
-                        ) : (
-                          /* ถ้าไม่มีส่วนลด */
-                          <div className="text-sm text-gray-500">-</div>
-                        )}
-                      </td>
-                      {/* คอลัมน์จัดการ (แก้ไข/ลบ) */}
-                      <td className="px-6 py-4 text-sm font-medium space-x-2">
-                        {/* ปุ่มแก้ไขสินค้า */}
-                        <Link
-                          to={`/products/edit/${product.productID}`} // ลิงก์ไปยังหน้าสำหรับแก้ไขสินค้านั้นๆ
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          แก้ไข
-                        </Link>
-                        {/* ปุ่มลบสินค้า */}
-                        <button
-                          onClick={() => handleDelete(product.productID)} // เรียกฟังก์ชัน handleDelete เพื่อลบสินค้า
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          ลบ
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
+                {products.map((product) => (
+                  <tr key={product.productID}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <img
+                        src={product.productImage || '/placeholder.png'}
+                        alt={product.productName}
+                        className="h-16 w-16 object-cover rounded"
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {product.productName}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        {product.category?.categoryName}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm text-gray-900">
+                        ฿{product.price.toLocaleString()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className={`text-sm ${product.stockQuantity < 10 ? 'text-orange-600' : 'text-gray-900'}`}>
+                        {product.stockQuantity}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium space-x-2">
+                      <Link
+                        to={`/products/edit/${product.productID}`}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        แก้ไข
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(product.productID)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        ลบ
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
+
 
 // ปิดตาราง
             </table>

@@ -64,22 +64,6 @@ const ProductDetail = () => {
   };
 
 
-  // ฟังก์ชันสำหรับคำนวณราคาสินค้า โดยคำนึงถึงส่วนลด (ถ้ามี)
-  const calculatePrice = () => {
-    // ตรวจสอบว่ามีข้อมูลสินค้าหรือไม่ ถ้าไม่มีให้คืนค่า 0
-    if (!product) return 0;
-
-    // ตรวจสอบว่าสินค้ามีส่วนลดหรือไม่
-    if (product.discount) {
-      // ถ้ามีส่วนลด คำนวณราคาหลังหักส่วนลด
-      // โดยลบส่วนลด (คิดเป็นเปอร์เซ็นต์) ออกจากราคาเต็ม
-      return product.price - (product.price * (product.discount / 100));
-    }
-
-    // ถ้าไม่มีส่วนลด คืนค่าราคาปกติของสินค้า
-    return product.price;
-  };
-
 
   // ฟังก์ชันสำหรับจัดการการเพิ่มสินค้าลงตะกร้า
   const handleAddToCart = async () => {
@@ -113,7 +97,7 @@ const ProductDetail = () => {
         {
           productID: id,
           quantity: quantity,
-          price: product.discountedPrice || product.price // ใช้ราคาที่ลดแล้วถ้ามี ไม่งั้นใช้ราคาปกติ
+          price: product.price // ใช้ราคาปกติของสินค้า
         },
         {
           headers: {
@@ -121,7 +105,9 @@ const ProductDetail = () => {
           }
         }
       );
-
+    
+      // ... ส่วนที่เหลือของโค้ด (การแสดง SweetAlert และการอัพเดทจำนวนสินค้าในตะกร้า) ...
+    
       // แสดง SweetAlert แจ้งเตือนว่าเพิ่มสินค้าลงตะกร้าสำเร็จ
       await Swal.fire({
         icon: 'success',
@@ -187,64 +173,29 @@ const ProductDetail = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid md:grid-cols-2 gap-8">
-
         <div className="aspect-square rounded-2xl overflow-hidden relative">
           <img
             src={product.productImage}
             alt={product.productName}
             className="w-full h-full object-cover"
           />
-          {product.discount > 0 && (
-            <div className="absolute top-4 right-4 bg-error text-error-content px-3 py-1 rounded-full flex items-center gap-2">
-              <Tag className="w-4 h-4" />
-              <span>ลด {product.discount}%</span>
-            </div>
-          )}
         </div>
-
-
+  
         <div className="space-y-6">
           <h1 className="text-3xl font-bold">{product.productName}</h1>
-
+  
           <div className="space-y-2">
-            {product.discountedPrice ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-primary">
-                    ฿{product.discountedPrice.toLocaleString()}
-                  </span>
-                  <span className="text-lg text-base-content/60 line-through">
-                    ฿{product.price.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-error">
-                  <Tag className="w-4 h-4" />
-                  <span>
-                    {product.discountType === 'percentage' ? (
-                      <>ลด {product.discounts[0].discountValue}%</>
-                    ) : (
-                      <>ลด ฿{product.discounts[0].discountValue.toLocaleString()}</>
-                    )}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 text-error">
-                  <span>ประหยัด ฿{(product.price - product.discountedPrice).toLocaleString()}</span>
-                </div>
-              </>
-            ) : (
-              <span className="text-2xl font-bold text-primary">
-                ฿{product.price.toLocaleString()}
-              </span>
-            )}
+            <span className="text-2xl font-bold text-primary">
+              ฿{product.price.toLocaleString()}
+            </span>
             <div className="text-base-content/60">
               สินค้าคงเหลือ: {product.stockQuantity} ชิ้น
             </div>
           </div>
-
+  
           <p className="text-base-content/80">{product.description}</p>
-
+  
           <div className="space-y-4">
-
             <div className="flex items-center gap-4">
               <span className="font-medium">จำนวน:</span>
               <div className="join">
@@ -270,8 +221,7 @@ const ProductDetail = () => {
                 </button>
               </div>
             </div>
-
-
+  
             <button
               className="btn btn-primary w-full gap-2"
               onClick={handleAddToCart}
@@ -281,8 +231,7 @@ const ProductDetail = () => {
               {product.stockQuantity === 0 ? 'สินค้าหมด' : 'เพิ่มลงตะกร้า'}
             </button>
           </div>
-
-
+  
           <div className="divider"></div>
           <div className="space-y-2">
             <h3 className="font-medium">รายละเอียดสินค้า</h3>
@@ -295,6 +244,7 @@ const ProductDetail = () => {
       </div>
     </div>
   );
+  
 };
 
 export default ProductDetail;

@@ -6,7 +6,6 @@ import Products from '../pages/product/Products'
 import FormProduct from '../pages/product/FormProduct'
 import Categories from '../pages/category/Categories'
 
-import Discounts from '../pages/discount/Discounts'
 import Orders from '../pages/order/Orders'
 
 // Auth guard component
@@ -31,7 +30,6 @@ export const AdminRoutes = () => {
         <Route path="products/add" element={<FormProduct />} />
         <Route path="products/edit/:id" element={<FormProduct />} />
         <Route path="categories" element={<Categories />} />
-        <Route path="discounts" element={<Discounts />} />
         <Route path="orders" element={<Orders />} />
 
       </Route>

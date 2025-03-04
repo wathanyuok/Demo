@@ -76,56 +76,20 @@ export const getCartItems = async (req, res) => {
             productName: true,
             price: true,
             productImage: true,
-            stockQuantity: true,
-            discounts: {
-              where: {
-                startDate: {
-                  lte: new Date()
-                },
-                endDate: {
-                  gte: new Date()
-                }
-              },
-              orderBy: {
-                discountValue: 'desc'
-              },
-              take: 1
-            }
+            stockQuantity: true
           }
         }
       }
     });
 
-    // คำนวณราคาที่รวมส่วนลดแล้ว
-    const cartWithDiscounts = cart.map(item => {
-      const activeDiscount = item.product.discounts[0];
-      let discountedPrice = item.product.price;
-      
-      if (activeDiscount) {
-        if (activeDiscount.discountType === 'percentage') {
-          discountedPrice = item.product.price * (1 - activeDiscount.discountValue / 100);
-        } else {
-          discountedPrice = item.product.price - activeDiscount.discountValue;
-        }
-      }
-
-      return {
-        ...item,
-        product: {
-          ...item.product,
-          discountedPrice,
-          activeDiscount: activeDiscount || null
-        }
-      };
-    });
-
-    res.json(cartWithDiscounts);
+    res.json(cart);
 
   } catch (error) {
     console.error('Get cart items error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลตะกร้า' });
   }
 };
+
 
 
 export const updateCartItem = async (req, res) => {

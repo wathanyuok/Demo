@@ -17,8 +17,6 @@ export default function AddProduct() {
 
   // สร้าง state สำหรับเก็บข้อมูลหมวดหมู่
   const [categories, setCategories] = useState([])
-  // สร้าง state สำหรับเก็บข้อมูลส่วนลด
-  const [discounts, setDiscounts] = useState([])
   // สร้าง state สำหรับแสดงสถานะ loading
   const [loading, setLoading] = useState(false)
   // สร้าง state สำหรับเก็บ URL ของรูปภาพ preview
@@ -30,18 +28,18 @@ export default function AddProduct() {
     price: '',
     stockQuantity: '',
     categoryID: '',
-    productImage: null,
-    discounts: []
+    productImage: null
   })
+  
 
   // ใช้ useEffect เพื่อเรียกใช้ฟังก์ชันเมื่อ component ถูกโหลด
   useEffect(() => {
     fetchCategories()
-    fetchDiscounts()
     if (id) {
       fetchProduct()
     }
   }, [id])
+  
 
   // ฟังก์ชันสำหรับดึงข้อมูลสินค้า (กรณีแก้ไข)
   const fetchProduct = async () => {
@@ -59,15 +57,9 @@ export default function AddProduct() {
         price: product.price.toString(),
         stockQuantity: product.stockQuantity.toString(),
         categoryID: product.categoryID,
-        productImage: null,
-        discounts: product.discounts.map(d => ({
-          discountID: d.discountID,
-          discountType: d.discountType,
-          discountValue: d.discountValue,
-          startDate: new Date(d.startDate).toISOString().split('T')[0],
-          endDate: new Date(d.endDate).toISOString().split('T')[0]
-        }))
+        productImage: null
       })
+      
 
       // ถ้ามีรูปภาพ ให้แสดง preview
       if (product.productImage) {
@@ -95,30 +87,6 @@ export default function AddProduct() {
     }
   }
 
-  // ฟังก์ชันสำหรับดึงข้อมูลส่วนลด
-  const fetchDiscounts = async () => {
-    try {
-      // ส่ง request เพื่อดึงข้อมูลส่วนลด
-      const response = await axios.get('/api/backoffice/discounts', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      console.log('Discount response:', response.data)
-      // ตรวจสอบรูปแบบข้อมูลที่ได้รับและกำหนดค่า state
-      if (Array.isArray(response.data)) {
-        setDiscounts(response.data)
-      } else if (Array.isArray(response.data.discounts)) {
-        setDiscounts(response.data.discounts)
-      } else {
-        console.error('Unexpected discount data format:', response.data)
-        setDiscounts([])
-      }
-    } catch (err) {
-      // แสดงข้อผิดพลาดถ้าไม่สามารถดึงข้อมูลได้
-      console.error('Error fetching discounts:', err)
-      setDiscounts([])
-    }
-  }
-
 
   // ฟังก์ชันจัดการการเปลี่ยนแปลงรูปภาพ
   const handleImageChange = (e) => {
@@ -132,77 +100,24 @@ export default function AddProduct() {
     }
   }
 
-  // ฟังก์ชันจัดการการเปลี่ยนแปลงส่วนลด
-  const handleDiscountChange = (e) => {
-    // ดึงค่า ID ของส่วนลดที่เลือก
-    const discountId = e.target.value
-    if (!discountId) {
-      // ถ้าไม่มีส่วนลดที่เลือก ให้ล้างข้อมูลส่วนลด
-      setFormData(prev => ({ ...prev, discounts: [] }))
-      return
-    }
-
-    // ค้นหาข้อมูลส่วนลดจาก ID ที่เลือก
-    const selectedDiscount = discounts.find(d => d.discountID === discountId)
-    if (selectedDiscount) {
-      // สร้างวันที่ปัจจุบันและวันที่หนึ่งเดือนถัดไป
-      const today = new Date()
-      const nextMonth = new Date()
-      nextMonth.setMonth(nextMonth.getMonth() + 1)
-
-      // อัปเดต state formData ด้วยข้อมูลส่วนลดที่เลือก
-      setFormData(prev => ({
-        ...prev,
-        discounts: [{
-          discountID: discountId,
-          discountType: selectedDiscount.discountType,
-          discountValue: selectedDiscount.discountValue,
-          startDate: today.toISOString().split('T')[0],
-          endDate: nextMonth.toISOString().split('T')[0]
-        }]
-      }))
-    }
-  }
-
-  // ฟังก์ชันจัดการการเปลี่ยนแปลงวันที่ของส่วนลด
-  const handleDateChange = (type, value) => {
-    if (formData.discounts.length > 0) {
-      // สร้าง object ใหม่จากข้อมูลส่วนลดเดิม
-      const updatedDiscount = { ...formData.discounts[0] }
-      if (type === 'start') {
-        // อัปเดตวันที่เริ่มต้น
-        updatedDiscount.startDate = value
-      } else {
-        // อัปเดตวันที่สิ้นสุด
-        updatedDiscount.endDate = value
-      }
-      // อัปเดต state formData ด้วยข้อมูลส่วนลดที่แก้ไขแล้ว
-      setFormData(prev => ({ ...prev, discounts: [updatedDiscount] }))
-    }
-  }
 
   // ฟังก์ชันจัดการการส่งฟอร์ม
   const handleSubmit = async (e) => {
-    // ป้องกันการ reload หน้า
     e.preventDefault()
-    // เริ่มแสดงสถานะ loading
     setLoading(true)
-
+  
     try {
-      // สร้าง FormData object สำหรับส่งข้อมูล
       const form = new FormData()
       form.append('productName', formData.productName)
       form.append('description', formData.description)
       form.append('price', formData.price)
       form.append('stockQuantity', formData.stockQuantity)
       form.append('categoryID', formData.categoryID)
-      form.append('discounts', JSON.stringify(formData.discounts))
       if (formData.productImage) {
         form.append('file', formData.productImage)
       }
-
+  
       if (id) {
-        // ถ้ามี id แสดงว่าเป็นการอัปเดตสินค้า
         await axios.put(`/api/backoffice/products/${id}`, form, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -210,7 +125,6 @@ export default function AddProduct() {
           }
         })
       } else {
-        // ถ้าไม่มี id แสดงว่าเป็นการสร้างสินค้าใหม่
         await axios.post('/api/backoffice/products', form, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -218,18 +132,16 @@ export default function AddProduct() {
           }
         })
       }
-
-      // นำทางไปยังหน้ารายการสินค้า
+  
       navigate('/products')
     } catch (err) {
-      // แสดงข้อผิดพลาดถ้าไม่สามารถบันทึกข้อมูลได้
       console.error('Error saving product:', err)
       alert(id ? 'ไม่สามารถอัพเดทสินค้าได้' : 'ไม่สามารถสร้างสินค้าได้')
     } finally {
-      // หยุดแสดงสถานะ loading
       setLoading(false)
     }
   }
+  
 
   // เริ่มต้น return ของ component
   return (
@@ -364,56 +276,7 @@ export default function AddProduct() {
           </select>
         </div>
 
-// ส่วนของการเลือกส่วนลด
-        <div className="mb-4">
-  // ป้ายกำกับสำหรับส่วนลด
-          <label className="block mb-2">ส่วนลด</label>
-  // dropdown สำหรับเลือกส่วนลด
-          <select
-            value={formData.discounts[0]?.discountID || ''}
-            onChange={handleDiscountChange}
-            className="w-full border p-2 rounded mb-2"
-          >
-    // ตัวเลือกไม่มีส่วนลด
-            <option value="">ไม่มีส่วนลด</option>
-    // สร้างตัวเลือกจากข้อมูลส่วนลดที่มี
-            {discounts.map((discount) => (
-              <option key={discount.discountID} value={discount.discountID}>
-                {discount.description} - {discount.discountType === 'percentage'
-                  ? `${discount.discountValue}%`
-                  : `${discount.discountValue} บาท`}
-              </option>
-            ))}
-          </select>
 
-  // แสดงฟิลด์วันที่เริ่มต้นและสิ้นสุดของส่วนลด ถ้ามีการเลือกส่วนลด
-          {formData.discounts.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 mt-2">
-      // ฟิลด์วันที่เริ่มต้น
-              <div>
-                <label className="block text-sm mb-1">วันที่เริ่มต้น</label>
-                <input
-                  type="date"
-                  value={formData.discounts[0].startDate}
-                  onChange={(e) => handleDateChange('start', e.target.value)}
-                  className="w-full border p-2 rounded"
-                  required
-                />
-              </div>
-      // ฟิลด์วันที่สิ้นสุด
-              <div>
-                <label className="block text-sm mb-1">วันที่สิ้นสุด</label>
-                <input
-                  type="date"
-                  value={formData.discounts[0].endDate}
-                  onChange={(e) => handleDateChange('end', e.target.value)}
-                  className="w-full border p-2 rounded"
-                  required
-                />
-              </div>
-            </div>
-          )}
-        </div>
 
 // ส่วนของปุ่มดำเนินการ
         <div className="flex space-x-4">

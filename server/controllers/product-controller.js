@@ -5,21 +5,11 @@ export const getAllProducts = async (req, res) => {
   try {
     const products = await prisma.product.findMany({
       include: {
-        category: true,
-        discounts: {
-          where: {
-            isActive: true,
-            endDate: {
-              gte: new Date()
-            }
-          }
-        }
+        category: true
       }
     });
-   
 
-
-    res.json(productsWithDiscount);
+    res.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ 
@@ -28,6 +18,7 @@ export const getAllProducts = async (req, res) => {
     });
   }
 };
+
 
 export const getProducts = async (req, res) => {
   try {
@@ -49,42 +40,18 @@ export const getProducts = async (req, res) => {
     const products = await prisma.product.findMany({
       where,
       include: {
-        category: true,
-        discounts: {
-          where: {
-            isActive: true,
-            endDate: {
-              gte: new Date()
-            }
-          }
-        }
+        category: true
       }
     });
-
-
-    let productsWithDiscount = [];
-
-    for (const product of products) {
-      const activeDiscount = product.discounts[0];
-      if (activeDiscount) {
-        if (activeDiscount.discountType === 'percentage'){       
-          product.discountedPrice = product.price * (activeDiscount.discountValue / 100);
-        } else { 
-          product.discountedPrice = product.price - activeDiscount.discountValue;
-        }
-      }
-      else {
-        product.discountedPrice = 0 ;
-      }
-      productsWithDiscount.push(product);
-    }
-
-
-    res.json(productsWithDiscount);
+    
+    res.json(products);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching products:', error);
+    res.status(500).json({ error: 'An error occurred while fetching products' });
   }
 };
+
+  
 
 export const getProductById = async (req, res) => {
   try {
@@ -92,18 +59,10 @@ export const getProductById = async (req, res) => {
 
     const product = await prisma.product.findUnique({
       where: {
-       productID: id
+        productID: id
       },
       include: {
-        category: true,
-        discounts: {
-          where: {
-            isActive: true,
-            endDate: {
-              gte: new Date()
-            }
-          }
-        },
+        category: true
       }
     });
 
@@ -112,22 +71,6 @@ export const getProductById = async (req, res) => {
         message: 'Product not found' 
       });
     }
-
-    // คำนวณราคาหลังส่วนลด
-    const activeDiscount = product.discounts[0];
-    if (activeDiscount) {
-      if (activeDiscount.discountType === 'percentage') {
-        product.discountedPrice = product.price * (1 - activeDiscount.discountValue / 100);
-      } else {
-        product.discountedPrice = product.price - activeDiscount.discountValue;
-      }
-      product.discountType = activeDiscount.discountType;
-    }
-    else {
-      product.discountedPrice = 0;
-      product.discountType = null;
-    }
-
 
     res.json(product);
   } catch (error) {

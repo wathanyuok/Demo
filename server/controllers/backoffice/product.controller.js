@@ -34,19 +34,9 @@ export const getProducts = async (req, res) => {
       take: limit,
       include: {
         category: true,
-        discounts: {
-          where: {
-            startDate: {
-              lte: currentDate
-            },
-            endDate: {
-              gte: currentDate
-            },
-            isActive: true
-          },
-        }
       },
     })
+    
 
     res.json({
       products,
@@ -71,9 +61,9 @@ export const getProduct = async (req, res) => {
       where: { productID: id },
       include: {
         category: true,
-        discounts: true,
       }
     })
+    
 
     if (!product) {
       return res.status(404).json({ error: 'ไม่พบสินค้า' })
@@ -89,7 +79,7 @@ export const getProduct = async (req, res) => {
 export const createProduct = async (req, res) => {
   try {
     // ดึงข้อมูลสินค้าจาก request body
-    const { productName, description, price, stockQuantity, categoryID, discounts } = req.body;
+    const { productName, description, price, stockQuantity, categoryID} = req.body;
     let productImage = null;
     let localImagePath = null;
 
@@ -146,8 +136,6 @@ export const createProduct = async (req, res) => {
       }
     }
 
-    // แปลงข้อมูลส่วนลดจาก string เป็น array ของ object
-    const discountData = JSON.parse(discounts || '[]');
 
     // สร้างข้อมูลสินค้าใหม่ในฐานข้อมูลโดยใช้ Prisma
     const product = await prisma.product.create({
@@ -158,19 +146,10 @@ export const createProduct = async (req, res) => {
         stockQuantity: parseInt(stockQuantity),
         productImage,
         categoryID,
-        discounts: {
-          create: discountData.map((discount) => ({
-            discountID: discount.discountID,
-            discountType: discount.discountType,
-            discountValue: discount.discountValue,
-            startDate: new Date(discount.startDate),
-            endDate: new Date(discount.endDate),
-            isActive: true,
-          })),
-        },
       },
-      include: { category: true, discounts: true }, // รวมข้อมูลหมวดหมู่และส่วนลด
+      include: { category: true },
     });
+    
 
     // ส่งข้อมูลสินค้าที่สร้างกลับไปพร้อมกับ status code 201
     res.status(201).json(product);
@@ -297,12 +276,7 @@ export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params
 
-    // Delete associated discounts first
-    await prisma.productDiscount.deleteMany({
-      where: { productID: id }
-    })
-
-    // Then delete the product
+    // Delete the product
     await prisma.product.delete({
       where: { productID: id }
     })

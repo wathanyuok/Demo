@@ -2,8 +2,6 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import 'dotenv/config';
 import handleErrors from './middlewares/error.js';
 

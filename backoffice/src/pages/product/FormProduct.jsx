@@ -147,29 +147,20 @@ export default function AddProduct() {
   return (
     // สร้าง container หลักของหน้า ใช้ Tailwind CSS สำหรับการจัดวาง
     <div className="container mx-auto px-4 py-8">
-    // แสดงหัวข้อของหน้า ขนาดใหญ่ ตัวหนา และมี margin ด้านล่าง
-      // ใช้เงื่อนไขเพื่อแสดงข้อความตามสถานะ (แก้ไขหรือเพิ่มใหม่)
       <h1 className="text-2xl font-bold mb-6">{id ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่'}</h1>
 
-    // เริ่มต้นฟอร์ม กำหนด event handler สำหรับการ submit และจำกัดความกว้างสูงสุด
       <form onSubmit={handleSubmit} className="max-w-2xl">
-      // ส่วนของการอัปโหลดรูปภาพ
         <div className="mb-4">
-        // ป้ายกำกับสำหรับรูปภาพสินค้า
           <label className="block mb-2">รูปภาพสินค้า</label>
-        // คอนเทนเนอร์สำหรับ preview และ input ไฟล์
           <div className="flex items-center space-x-4">
-          // แสดง preview รูปภาพถ้ามี
             {preview && (
               // คอนเทนเนอร์สำหรับรูปภาพ preview
               <div className="w-32 h-32 relative">
-              // แสดงรูปภาพ preview
                 <img
                   src={preview}
                   alt="Preview"
                   className="w-full h-full object-cover rounded"
                 />
-              // ปุ่มลบรูปภาพ
                 <button
                   type="button"
                   // เมื่อคลิกจะลบ preview และรีเซ็ต productImage ใน formData
@@ -184,7 +175,6 @@ export default function AddProduct() {
                 </button>
               </div>
             )}
-          // input สำหรับอัปโหลดไฟล์
             <input
               type="file"
               onChange={handleImageChange}
@@ -194,11 +184,8 @@ export default function AddProduct() {
           </div>
         </div>
 
-      // ฟิลด์กรอกชื่อสินค้า
         <div className="mb-4">
-        // ป้ายกำกับสำหรับชื่อสินค้า
           <label className="block mb-2">ชื่อสินค้า</label>
-        // input สำหรับกรอกชื่อสินค้า
           <input
             type="text"
             value={formData.productName}
@@ -208,11 +195,8 @@ export default function AddProduct() {
           />
         </div>
 
-      // ฟิลด์กรอกรายละเอียดสินค้า
         <div className="mb-4">
-        // ป้ายกำกับสำหรับรายละเอียดสินค้า
           <label className="block mb-2">รายละเอียด</label>
-        // textarea สำหรับกรอกรายละเอียดสินค้า
           <textarea
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -222,11 +206,8 @@ export default function AddProduct() {
           />
         </div>
 
-      // ฟิลด์กรอกราคาสินค้า
         <div className="mb-4">
-        // ป้ายกำกับสำหรับราคาสินค้า
           <label className="block mb-2">ราคา</label>
-        // input สำหรับกรอกราคาสินค้า
           <input
             type="number"
             value={formData.price}
@@ -238,11 +219,8 @@ export default function AddProduct() {
           />
         </div>
 
-      // ฟิลด์กรอกจำนวนสินค้าในคลัง
         <div className="mb-4">
-        // ป้ายกำกับสำหรับจำนวนสินค้าในคลัง
           <label className="block mb-2">จำนวนในคลัง</label>
-        // input สำหรับกรอกจำนวนสินค้าในคลัง
           <input
             type="number"
             value={formData.stockQuantity}
@@ -253,11 +231,8 @@ export default function AddProduct() {
           />
         </div>
 
-      // ส่วนของการเลือกหมวดหมู่
         <div className="mb-4">
-  // ป้ายกำกับสำหรับหมวดหมู่
           <label className="block mb-2">หมวดหมู่</label>
-  // dropdown สำหรับเลือกหมวดหมู่
           <select
             value={formData.categoryID}
             // อัพเดท state เมื่อมีการเลือกหมวดหมู่
@@ -265,9 +240,7 @@ export default function AddProduct() {
             className="w-full border p-2 rounded"
             required
           >
-    // ตัวเลือกเริ่มต้น
             <option value="">เลือกหมวดหมู่</option>
-    // สร้างตัวเลือกจากข้อมูลหมวดหมู่ที่มี
             {categories.map((category) => (
               <option key={category.categoryID} value={category.categoryID}>
                 {category.categoryName}
@@ -278,9 +251,7 @@ export default function AddProduct() {
 
 
 
-// ส่วนของปุ่มดำเนินการ
         <div className="flex space-x-4">
-  // ปุ่มบันทึก/อัพเดท
           <button
             type="submit"
             disabled={loading}
@@ -288,7 +259,6 @@ export default function AddProduct() {
           >
             {loading ? 'กำลังบันทึก...' : (id ? 'อัพเดท' : 'สร้าง')}
           </button>
-  // ปุ่มยกเลิก
           <button
             type="button"
             onClick={() => navigate('/products')}

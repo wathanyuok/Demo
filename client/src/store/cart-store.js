@@ -10,7 +10,6 @@ const useCartStore = create((set, get) => ({
   addToCart: async (productID, qty = 1) => {
     set({ isLoading: true });
     try {
-      // TODO: ต้องเปลี่ยน customerID ตามระบบ authentication ของคุณ
       const customerID = localStorage.getItem('customerID');
       
 

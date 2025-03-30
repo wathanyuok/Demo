@@ -1,57 +1,45 @@
-// นำเข้า useState จาก React เพื่อจัดการ state ภายในคอมโพเนนต์
 import { useState } from 'react';
-
-// นำเข้า Link และ useNavigate จาก react-router-dom สำหรับการนำทางระหว่างหน้า
 import { Link, useNavigate } from 'react-router-dom';
-
-// นำเข้า axios สำหรับการเรียกใช้งาน API
 import axios from 'axios';
-
-// นำเข้าไอคอนต่าง ๆ จากไลบรารี lucide-react เพื่อใช้ในแบบฟอร์ม
 import { UserPlus, Mail, Lock, User, Phone, MapPin } from 'lucide-react';
 
-// สร้างคอมโพเนนต์ Register สำหรับหน้าสมัครสมาชิก
 const Register = () => {
-  // ใช้ useNavigate เพื่อสร้างฟังก์ชันสำหรับนำทางไปยังหน้าอื่น
   const navigate = useNavigate();
 
   // สร้าง state formData เพื่อเก็บข้อมูลที่ผู้ใช้กรอกในแบบฟอร์ม
   const [formData, setFormData] = useState({
-    firstname: '',       // ชื่อ
-    lastname: '',        // นามสกุล
-    email: '',           // อีเมล
-    password: '',        // รหัสผ่าน
-    confirmPassword: '', // ยืนยันรหัสผ่าน
-    phonenumber: '',     // เบอร์โทรศัพท์
-    address: ''          // ที่อยู่
+    firstname: '',       
+    lastname: '',      
+    email: '',           
+    password: '',        
+    confirmPassword: '', 
+    phonenumber: '',    
+    address: ''         
   });
 
-  // สร้าง state error สำหรับเก็บข้อความแสดงข้อผิดพลาด
   const [error, setError] = useState('');
 
-  // สร้าง state loading เพื่อตรวจสอบสถานะการโหลด (เช่น ระหว่างส่งข้อมูล)
   const [loading, setLoading] = useState(false);
 
   // ฟังก์ชัน handleChange สำหรับอัปเดตค่าใน formData เมื่อผู้ใช้กรอกข้อมูลในช่อง input
   const handleChange = (e) => {
     setFormData({
-      ...formData,               // คัดลอกค่าปัจจุบันใน formData
-      [e.target.name]: e.target.value // อัปเดตค่าของ input ที่ตรงกับ name attribute
+      ...formData,             
+      [e.target.name]: e.target.value 
     });
   };
 
-  // ฟังก์ชัน handleSubmit สำหรับจัดการเมื่อผู้ใช้กดปุ่ม "สมัครสมาชิก"
+ 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // ป้องกันการ reload หน้าเมื่อส่งฟอร์ม
+    e.preventDefault(); 
 
-    setError('');       // รีเซ็ตข้อความแสดงข้อผิดพลาดก่อนเริ่มกระบวนการใหม่
-    setLoading(true);   // ตั้งสถานะ loading เป็น true ระหว่างส่งข้อมูล
+    setError('');       
+    setLoading(true);  
 
-    // ตรวจสอบว่ารหัสผ่านและยืนยันรหัสผ่านตรงกันหรือไม่
     if (formData.password !== formData.confirmPassword) {
-      setError('รหัสผ่านไม่ตรงกัน'); // แสดงข้อความข้อผิดพลาดหากไม่ตรงกัน
-      setLoading(false);               // ยกเลิกสถานะ loading
-      return;                          // หยุดกระบวนการสมัครสมาชิก
+      setError('รหัสผ่านไม่ตรงกัน'); 
+      setLoading(false);              
+      return;                        
     }
 
     // ลบค่า confirmPassword ออกจาก formData ก่อนส่งไปยัง API (ไม่จำเป็นต้องส่ง)
@@ -64,16 +52,14 @@ const Register = () => {
         dataToSend
       );
 
-      // หลังจากสมัครสมาชิกสำเร็จ ให้เปลี่ยนเส้นทางไปยังหน้าล็อกอิน (/login)
       navigate('/login');
     } catch (error) {
-      // หากเกิดข้อผิดพลาด ให้แสดงข้อความจาก API หรือข้อความเริ่มต้น
       setError(
         error.response?.data?.message || 
         'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง'
       );
     } finally {
-      setLoading(false); // ยกเลิกสถานะ loading หลังจากกระบวนการเสร็จสิ้นไม่ว่าจะสำเร็จหรือไม่สำเร็จ
+      setLoading(false); 
     }
   };
 

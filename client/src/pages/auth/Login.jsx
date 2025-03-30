@@ -1,55 +1,36 @@
-// นำเข้า useState จาก React เพื่อจัดการ state ภายในคอมโพเนนต์
 import { useState } from 'react';
-
-// นำเข้า Link และ useNavigate จาก react-router-dom สำหรับการนำทางระหว่างหน้า
 import { Link, useNavigate } from 'react-router-dom';
-
-// นำเข้า axios สำหรับการเรียกใช้งาน API
 import axios from 'axios';
-
-// นำเข้า useUserStore ซึ่งเป็น custom hook สำหรับจัดการสถานะผู้ใช้ (user)
 import { useUserStore } from '../../store/user-store';
-
-// นำเข้าไอคอนจากไลบรารี lucide-react เพื่อใช้ใน UI
 import { LogIn, Mail, Lock } from 'lucide-react';
-
-// นำเข้า Swal (SweetAlert2) สำหรับแสดงข้อความแจ้งเตือนแบบ Popup
 import Swal from 'sweetalert2';
 
-// สร้างคอมโพเนนต์ Login สำหรับหน้าล็อกอิน
-const Login = () => {
-  // สร้าง state email และ password เพื่อเก็บค่าที่ผู้ใช้กรอกในฟอร์ม
-  const [email, setEmail] = useState(""); // ค่าเริ่มต้นเป็นค่าว่าง
-  const [password, setPassword] = useState(""); // ค่าเริ่มต้นเป็นค่าว่าง
 
-  // สร้าง state error เพื่อเก็บข้อความแสดงข้อผิดพลาด
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+
   const [error, setError] = useState("");
 
-  // ใช้ useNavigate เพื่อสร้างฟังก์ชันสำหรับนำทางไปยังหน้าอื่น
   const navigate = useNavigate();
 
-  // ดึงฟังก์ชัน setUser จาก global store (useUserStore) เพื่ออัปเดตข้อมูลผู้ใช้หลังจากเข้าสู่ระบบสำเร็จ
   const setUser = useUserStore((state) => state.setUser);
 
-  // ฟังก์ชัน handleSubmit สำหรับจัดการเมื่อผู้ใช้กดปุ่ม "เข้าสู่ระบบ"
   const handleSubmit = async (e) => {
-    e.preventDefault(); // ป้องกันการ reload หน้าเมื่อส่งฟอร์ม
-    setError("");       // รีเซ็ตข้อความแสดงข้อผิดพลาดก่อนเริ่มกระบวนการใหม่
+    e.preventDefault();
+    setError("");
 
     try {
-      // ส่งคำขอ POST ไปยัง API เพื่อตรวจสอบข้อมูลเข้าสู่ระบบ
       const response = await axios.post(
-        `${import.meta.env.VITE_URL_SERVER_API}/api/auth/login`, // URL ของ API (ดึงมาจาก environment variable)
+        `${import.meta.env.VITE_URL_SERVER_API}/api/auth/login`,
         {
-          email,    // ส่งค่า email ที่ผู้ใช้กรอก
-          password, // ส่งค่ารหัสผ่านที่ผู้ใช้กรอก
+          email,
+          password,
         }
       );
 
-      // ดึง token จาก response หลังจากเข้าสู่ระบบสำเร็จ
       const token = response.data.token;
-
-      // บันทึก token ลงใน localStorage เพื่อใช้งานในครั้งถัดไป
       localStorage.setItem("token", token);
 
       // เรียก API `/api/auth/me` เพื่อนำข้อมูลผู้ใช้มาเก็บใน state หลังจากเข้าสู่ระบบสำเร็จ
@@ -65,21 +46,19 @@ const Login = () => {
       // อัปเดตข้อมูลผู้ใช้ใน global store ด้วยข้อมูลที่ได้จาก API
       setUser(userResponse.data);
 
-      // แสดงข้อความแจ้งเตือนสำเร็จด้วย SweetAlert2
       await Swal.fire({
-        icon: 'success',           // ไอคอนแจ้งเตือนแบบสำเร็จ
-        title: 'เข้าสู่ระบบสำเร็จ',   // หัวข้อของข้อความแจ้งเตือน
-        text: 'ยินดีต้อนรับกลับ!',   // ข้อความเพิ่มเติมใน popup
-        timer: 1500,               // ตั้งเวลาให้ popup ปิดอัตโนมัติใน 1.5 วินาที
-        showConfirmButton: false,  // ไม่แสดงปุ่มยืนยันใน popup
-        position: 'top',           // ตำแหน่งของ popup อยู่ด้านบนของหน้าจอ
-        backdrop: false            // ไม่แสดงพื้นหลังมืดด้านหลัง popup
+        icon: 'success',
+        title: 'เข้าสู่ระบบสำเร็จ',
+        text: 'ยินดีต้อนรับกลับ!',
+        timer: 1500,
+        showConfirmButton: false,
+        position: 'top',
+        backdrop: false
       });
 
       // เปลี่ยนเส้นทางไปยังหน้าแรกของเว็บไซต์ (/)
       navigate("/");
     } catch (err) {
-      // หากเกิดข้อผิดพลาด ให้ตั้งค่าข้อความข้อผิดพลาดจาก API หรือข้อความเริ่มต้น
       setError(
         err.response?.data?.message || "มีข้อผิดพลาดในการเข้าสู่ระบบ"
       );
@@ -123,14 +102,14 @@ const Login = () => {
                   <Mail className="w-4 h-4" /> อีเมล
                 </span>
               </label>
-              <input 
-                type="email" 
-                name="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="your@email.com" 
-                className="input input-bordered w-full bg-base-100" 
-                required 
+              <input
+                type="email"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="input input-bordered w-full bg-base-100"
+                required
               />
             </div>
 
@@ -141,14 +120,14 @@ const Login = () => {
                   <Lock className="w-4 h-4" /> รหัสผ่าน
                 </span>
               </label>
-              <input 
-                type="password" 
-                name="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                placeholder="••••••••" 
-                className="input input-bordered w-full bg-base-100" 
-                required 
+              <input
+                type="password"
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="input input-bordered w-full bg-base-100"
+                required
               />
             </div>
 
@@ -167,5 +146,4 @@ const Login = () => {
   );
 };
 
-// ส่งออกคอมโพเนนต์ Login เพื่อให้สามารถใช้งานในไฟล์อื่นได้
 export default Login;

@@ -42,7 +42,7 @@ const MainLayout = ({ children }) => {
     <div className="min-h-screen bg-base-100">
       <Header />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex gap-8">
+        <div className="flex gap-8" style={{ backgroundColor: 'red' }}>
           {/* Category Menu */}
           <div className="hidden md:block sticky top-8">
             <CategoryMenu />

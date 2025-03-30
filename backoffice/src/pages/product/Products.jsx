@@ -144,11 +144,8 @@ export default function Products() {
   return (
     // คอนเทนเนอร์หลักของหน้า ใช้ padding รอบด้าน
     <div className="p-6">
-      ส่วนหัวของหน้า แสดงชื่อ "จัดการสินค้า" และปุ่มเพิ่มสินค้า
       <div className="flex justify-between items-center mb-6">
-      // หัวข้อของหน้า
         <h1 className="text-2xl font-bold text-gray-800">จัดการสินค้า</h1>
-      // ปุ่มลิงก์ไปยังหน้าสำหรับเพิ่มสินค้าใหม่
         <Link
           to="/products/add" // ลิงก์ไปยังหน้าสำหรับเพิ่มสินค้าใหม่
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -157,10 +154,8 @@ export default function Products() {
         </Link>
       </div>
 
-    // ฟอร์มสำหรับค้นหาสินค้า
       <form onSubmit={handleSearch} className="mb-6">
         <div className="flex gap-2">
-        // ช่องกรอกคำค้นหา
           <input
             type="text" // กำหนดให้เป็น input ชนิดข้อความ
             value={searchTerm} // คำที่ผู้ใช้กรอกในช่องค้นหา
@@ -168,7 +163,6 @@ export default function Products() {
             placeholder="ค้นหาสินค้า..." // ข้อความตัวอย่างในช่องค้นหา
             className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" // สไตล์ของ input (ใช้ Tailwind CSS)
           />
-        // ปุ่มสำหรับกดค้นหา
           <button
             type="submit" // กำหนดให้ปุ่มนี้เป็นปุ่ม submit ของฟอร์ม
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -178,7 +172,6 @@ export default function Products() {
         </div>
       </form>
 
-    // ถ้ามีข้อผิดพลาด ให้แสดงข้อความข้อผิดพลาดและปุ่มลองใหม่
       {error ? (
         <div className="text-center text-red-600 p-4">
           <p>{error}</p> {/* แสดงข้อความข้อผิดพลาด */}
@@ -218,7 +211,6 @@ export default function Products() {
               </thead>
 
 
-              // ส่วนเนื้อหาของตาราง (แสดงข้อมูลสินค้า)
               <tbody className="bg-white divide-y divide-gray-200">
                 {products.map((product) => (
                   <tr key={product.productID}>
@@ -266,23 +258,17 @@ export default function Products() {
               </tbody>
 
 
-// ปิดตาราง
             </table>
 
-// ปิด container ของตาราง
           </div>
 
 
-          // คอนเทนเนอร์สำหรับส่วนการแบ่งหน้า (Pagination)
           <div className="mt-4 flex justify-between items-center">
-  // แสดงข้อความจำนวนรายการที่แสดงผลและจำนวนรายการทั้งหมด
             <div className="text-sm text-gray-700">
               แสดง {products.length} รายการ จากทั้งหมด {pagination.totalItems} รายการ
             </div>
 
-  // คอนเทนเนอร์สำหรับปุ่มเปลี่ยนหน้า
             <div className="flex gap-2">
-    // ปุ่มย้อนกลับหน้าก่อนหน้า
               <button
                 onClick={() => handlePageChange(pagination.currentPage - 1)} // เรียกฟังก์ชัน handlePageChange เพื่อเปลี่ยนไปหน้าก่อนหน้า
                 disabled={pagination.currentPage === 1} // ปิดการใช้งานปุ่มถ้าอยู่ที่หน้าแรกแล้ว
@@ -291,7 +277,6 @@ export default function Products() {
                 ก่อนหน้า {/* ข้อความในปุ่ม */}
               </button>
 
-    // คอนเทนเนอร์สำหรับปุ่มหมายเลขหน้า
               <div className="flex items-center gap-1">
                 {[...Array(pagination.totalPages)].map((_, i) => ( // สร้าง array ตามจำนวนหน้าทั้งหมดแล้ววนลูป
                   // ปุ่มหมายเลขหน้า
@@ -308,7 +293,6 @@ export default function Products() {
                 ))}
               </div>
 
-    // ปุ่มไปหน้าถัดไป
               <button
                 onClick={() => handlePageChange(pagination.currentPage + 1)} // เรียกฟังก์ชัน handlePageChange เพื่อเปลี่ยนไปหน้าถัดไป
                 disabled={pagination.currentPage === pagination.totalPages} // ปิดการใช้งานปุ่มถ้าอยู่ที่หน้าสุดท้ายแล้ว

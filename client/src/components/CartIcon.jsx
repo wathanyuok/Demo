@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ShoppingCart } from 'lucide-react'; // ไอคอนรูปตะกร้าจาก lucide-react
+import { ShoppingCart } from 'lucide-react'; 
 import useCartStore from '../store/cart-store';
 
 const CartIcon = () => {

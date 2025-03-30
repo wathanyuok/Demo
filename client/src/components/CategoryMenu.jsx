@@ -9,7 +9,7 @@ const CategoryMenu = () => {
 
   const categoryIcons = {
    
-    'ทั้งหมด': <Star className="w-5 h-5" />
+    'All': <Star className="w-5 h-5" />
   };
 
   useEffect(() => {
@@ -18,7 +18,7 @@ const CategoryMenu = () => {
         const response = await axios.get(
           `${import.meta.env.VITE_URL_SERVER_API}/api/categories`
         );
-        setCategories([{ categoryName: 'ทั้งหมด', categoryID: 'all' }, ...response.data]);
+        setCategories([{ categoryName: 'All', categoryID: 'all' }, ...response.data]);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }

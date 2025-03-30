@@ -1,7 +1,5 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-
 import PublicLayout from '../layouts/PublicLayout';
 import Home from '../pages/Home';
 import CategoryPage from '../pages/CategoryPage';

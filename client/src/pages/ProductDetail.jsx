@@ -1,78 +1,48 @@
-// นำเข้า hooks จาก React
 import { useState, useEffect } from 'react';
-// นำเข้า hooks สำหรับการจัดการ routing
 import { useParams, useNavigate } from 'react-router-dom';
-// นำเข้า axios สำหรับการทำ HTTP requests
 import axios from 'axios';
-// นำเข้า icons จาก lucide-react
 import { Plus, Minus, ShoppingCart, Tag } from 'lucide-react';
-// นำเข้า Swal จาก sweetalert2 สำหรับแสดง popup
 import Swal from 'sweetalert2';
 
-// สร้าง component ProductDetail
 const ProductDetail = () => {
-  // ดึงค่า id จาก URL parameters
   const { id } = useParams();
-  // สร้างฟังก์ชันสำหรับการนำทาง
   const navigate = useNavigate();
-  // สร้าง state สำหรับเก็บข้อมูลสินค้า
   const [product, setProduct] = useState(null);
-  // สร้าง state สำหรับสถานะการโหลด
   const [loading, setLoading] = useState(true);
-  // สร้าง state สำหรับเก็บข้อความผิดพลาด
   const [error, setError] = useState('');
-  // สร้าง state สำหรับเก็บจำนวนสินค้าที่เลือก
   const [quantity, setQuantity] = useState(1);
 
-  // ใช้ useEffect เพื่อเรียกใช้ฟังก์ชัน fetchProduct เมื่อ component ถูกโหลดหรือ id เปลี่ยนแปลง
   useEffect(() => {
     fetchProduct();
   }, [id]);
 
-  // ฟังก์ชันสำหรับดึงข้อมูลสินค้าจาก API
   const fetchProduct = async () => {
     try {
-      // ส่ง GET request ไปยัง API
       const response = await axios.get(
         `${import.meta.env.VITE_URL_SERVER_API}/api/products/${id}`
       );
-      // อัปเดต state product ด้วยข้อมูลที่ได้รับ
       setProduct(response.data);
-      // แสดงข้อมูลที่ได้รับในคอนโซล
       console.log("response.data", response.data)
     } catch (error) {
-      // แสดงข้อผิดพลาดในคอนโซล
       console.error('Error fetching product:', error);
-      // อัปเดต state error ด้วยข้อความแสดงข้อผิดพลาด
       setError('ไม่สามารถโหลดข้อมูลสินค้าได้');
     } finally {
-      // อัปเดตสถานะการโหลดเป็นเสร็จสิ้น
       setLoading(false);
     }
   };
 
-  // ฟังก์ชันสำหรับจัดการการเปลี่ยนแปลงจำนวนสินค้า
   const handleQuantityChange = (value) => {
-    // คำนวณจำนวนสินค้าใหม่โดยเพิ่มหรือลด value จากจำนวนปัจจุบัน
     const newQuantity = quantity + value;
 
-    // ตรวจสอบว่าจำนวนใหม่อยู่ในช่วงที่ถูกต้อง (ไม่น้อยกว่า 1 และไม่เกินจำนวนในสต็อก)
     if (newQuantity >= 1 && newQuantity <= product.stockQuantity) {
-      // ถ้าเงื่อนไขเป็นจริง, อัปเดต state quantity ด้วยค่าใหม่
       setQuantity(newQuantity);
     }
   };
 
-
-
-  // ฟังก์ชันสำหรับจัดการการเพิ่มสินค้าลงตะกร้า
   const handleAddToCart = async () => {
-    // ดึง token จาก localStorage
     const token = localStorage.getItem('token');
 
-    // ตรวจสอบว่ามี token หรือไม่ (ผู้ใช้ล็อกอินหรือยัง)
     if (!token) {
-      // ถ้าไม่มี token แสดง SweetAlert เตือนให้เข้าสู่ระบบ
       await Swal.fire({
         icon: 'warning',
         title: 'กรุณาเข้าสู่ระบบ',
@@ -81,34 +51,28 @@ const ProductDetail = () => {
         confirmButtonText: 'เข้าสู่ระบบ',
         cancelButtonText: 'ยกเลิก'
       }).then((result) => {
-        // ถ้าผู้ใช้กดปุ่มยืนยัน ให้นำทางไปหน้าล็อกอิน
         if (result.isConfirmed) {
           navigate('/login');
         }
       });
-      // ออกจากฟังก์ชันถ้าไม่มี token
       return;
     }
 
     try {
-      // ส่ง POST request ไปยัง API เพื่อเพิ่มสินค้าลงตะกร้า
       await axios.post(
         `${import.meta.env.VITE_URL_SERVER_API}/api/cart`,
         {
           productID: id,
           quantity: quantity,
-          price: product.price // ใช้ราคาปกติของสินค้า
+          price: product.price
         },
         {
           headers: {
-            Authorization: `Bearer ${token}` // แนบ token สำหรับการยืนยันตัวตน
+            Authorization: `Bearer ${token}`
           }
         }
       );
-    
-      // ... ส่วนที่เหลือของโค้ด (การแสดง SweetAlert และการอัพเดทจำนวนสินค้าในตะกร้า) ...
-    
-      // แสดง SweetAlert แจ้งเตือนว่าเพิ่มสินค้าลงตะกร้าสำเร็จ
+
       await Swal.fire({
         icon: 'success',
         title: 'เพิ่มลงตะกร้าสำเร็จ',
@@ -117,20 +81,16 @@ const ProductDetail = () => {
         confirmButtonText: 'ไปที่ตะกร้า',
         cancelButtonText: 'เลือกซื้อต่อ'
       }).then((result) => {
-        // ถ้าผู้ใช้กดปุ่มยืนยัน ให้นำทางไปหน้าตะกร้า
         if (result.isConfirmed) {
           navigate('/cart');
         }
       });
 
-      // อัพเดทจำนวนสินค้าในตะกร้า (ถ้ามีฟังก์ชันนี้)
       if (window.updateCartCount) {
         window.updateCartCount();
       }
     } catch (error) {
-      // จัดการกับข้อผิดพลาดที่อาจเกิดขึ้น
       console.error('Error adding to cart:', error);
-      // แสดง SweetAlert แจ้งเตือนข้อผิดพลาด
       Swal.fire({
         icon: 'error',
         title: 'เกิดข้อผิดพลาด',
@@ -140,7 +100,6 @@ const ProductDetail = () => {
       });
     }
   };
-
 
   if (loading) {
     return (
@@ -244,7 +203,6 @@ const ProductDetail = () => {
       </div>
     </div>
   );
-  
 };
 
 export default ProductDetail;

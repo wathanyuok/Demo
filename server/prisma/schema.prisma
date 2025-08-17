@@ -2,7 +2,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 generator erd {
   provider = "prisma-erd-generator"
   output   = "../ERD.svg"
@@ -13,108 +12,118 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Customer { //ลูกค้า
-  customerID  String   @id @default(uuid())
-  firstname   String
-  lastname    String
-  email       String   @unique
-  password    String
-  phonenumber String
-  address     String
-  orders      Order[]
-  carts       Cart[]
-}
-
-
-
-model Category { //ประเภทสินค้า
-  categoryID   String    @id @default(uuid())
-  categoryName String
-  products     Product[]
-}
-
-model Product { //สินค้า
-  productID    String       @id @default(uuid())
-  productName  String
-  description  String?
-  productImage String?
-  price        Float
-  stockQuantity Int
-  categoryID   String
-  category     Category  @relation(fields: [categoryID], references: [categoryID])
-  orderDetails OrderDetail[]
-  discounts     ProductDiscount[]
-  carts        Cart[]
-}
-
-model Discount {
-  discountID    String    @id @default(uuid())
-  discountType  String    // ประเภทส่วนลด (เปอร์เซ็นต์หรือจำนวนเงิน)
-  discountValue Float     // มูลค่าส่วนลด
-  description   String    // คำอธิบายส่วนลด
-}
-
-model ProductDiscount {
-  productDiscountID String   @id @default(uuid())
-  discountID         String   // รหัสส่วนลด
-  productID         String   // รหัสสินค้า
-  discountType      String   // ประเภทส่วนลด
-  discountValue     Float    // มูลค่าส่วนลด
-  startDate         DateTime // วันที่เริ่มต้นส่วนลด
-  endDate           DateTime // วันที่สิ้นสุดส่วนลด
-  isActive          Boolean  // สถานะการใช้งาน 
-  product           Product  @relation(fields: [productID], references: [productID])
-}
-
-model Cart { //ตะกร้าสินค้า
-  cartID   String  @id @default(uuid())
+model cart {
+  cartID     String   @id
   customerID String
   productID  String
   qty        Int
   total      Float
-  customer   Customer   @relation(fields: [customerID], references: [customerID])
-  product    Product    @relation(fields: [productID], references: [productID])
+  customer   customer @relation(fields: [customerID], references: [customerID], map: "Cart_customerID_fkey")
+  product    product  @relation(fields: [productID], references: [productID], map: "Cart_productID_fkey")
+
+  @@index([customerID], map: "Cart_customerID_fkey")
+  @@index([productID], map: "Cart_productID_fkey")
 }
 
-model Order { //ออเดอร์
-  orderID     String       @id @default(uuid())
+model category {
+  categoryID   String    @id
+  categoryName String
+  product      product[]
+}
+
+model customer {
+  customerID  String  @id
+  firstname   String
+  lastname    String
+  email       String  @unique(map: "Customer_email_key")
+  password    String
+  phonenumber String
+  address     String
+  cart        cart[]
+  order       order[]
+}
+
+model discount {
+  discountID    String @id
+  discountType  String
+  discountValue Float
+  description   String
+}
+
+model order {
+  orderID     String        @id
   customerID  String
   orderdate   DateTime
   totalAmount Float
   status      String
   address     String
-  customer    Customer   @relation(fields: [customerID], references: [customerID])
-  orderDetails OrderDetail[]
-  payment     Payment?   
+  customer    customer      @relation(fields: [customerID], references: [customerID], map: "Order_customerID_fkey")
+  orderdetail orderdetail[]
+  payment     payment?
+
+  @@index([customerID], map: "Order_customerID_fkey")
 }
 
-model OrderDetail { //รายละเอียดออเดอร์
-  orderDetailID String  @id @default(uuid())
+model orderdetail {
+  orderDetailID String  @id
   orderID       String
   productID     String
   quantity      Int
   price         Float
-  order         Order   @relation(fields: [orderID], references: [orderID])
-  product       Product @relation(fields: [productID], references: [productID])
+  order         order   @relation(fields: [orderID], references: [orderID], map: "OrderDetail_orderID_fkey")
+  product       product @relation(fields: [productID], references: [productID], map: "OrderDetail_productID_fkey")
+
+  @@index([orderID], map: "OrderDetail_orderID_fkey")
+  @@index([productID], map: "OrderDetail_productID_fkey")
 }
 
-model Payment { //ลูกค้าชำระเงิน
-  paymentID     String  @id @default(uuid())
-  orderID       String  @unique
+model payment {
+  paymentID     String   @id
+  orderID       String   @unique(map: "Payment_orderID_key")
   paymentDate   DateTime
   slip          String?
   amount        Float
   paymentMethod String
-  order         Order   @relation(fields: [orderID], references: [orderID])
+  order         order    @relation(fields: [orderID], references: [orderID], map: "Payment_orderID_fkey")
 }
 
-model User {
-  userID    String   @id @default(uuid())
-  username  String   @unique
-  email     String   @unique
+model product {
+  productID       String            @id
+  productName     String
+  description     String?
+  productImage    String?
+  price           Float
+  stockQuantity   Int
+  categoryID      String
+  cart            cart[]
+  orderdetail     orderdetail[]
+  category        category          @relation(fields: [categoryID], references: [categoryID], map: "Product_categoryID_fkey")
+  productdiscount productdiscount[]
+
+  @@index([categoryID], map: "Product_categoryID_fkey")
+}
+
+model productdiscount {
+  productDiscountID String   @id
+  discountID        String
+  productID         String
+  discountType      String
+  discountValue     Float
+  startDate         DateTime
+  endDate           DateTime
+  isActive          Boolean
+  product           product  @relation(fields: [productID], references: [productID], map: "ProductDiscount_productID_fkey")
+
+  @@index([productID], map: "ProductDiscount_productID_fkey")
+}
+
+model user {
+  userID    String   @id
+  username  String   @unique(map: "User_username_key")
+  email     String   @unique(map: "User_email_key")
   password  String
   name      String?
   role      String   @default("admin")
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime
 }

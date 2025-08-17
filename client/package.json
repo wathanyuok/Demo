@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^3.10.0",
     "axios": "^1.7.9",
     "daisyui": "^4.12.23",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.474.0",
     "react": "^18.2.0",
     "react-date-picker": "^11.0.0",
